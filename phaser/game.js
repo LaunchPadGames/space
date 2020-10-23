@@ -33,6 +33,7 @@ function preload (){
 
 function create (){
   // Set rules that don't change here
+  this.socket = io()
 }
 
 function update (){
