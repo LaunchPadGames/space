@@ -33,14 +33,23 @@ function preload (){
 
 function create (){
   var self = this
+  self.otherPlayers = {}
   this.socket = io();
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
         addPlayer(self, players[id]);
+      } else {
+        addOtherPlayers(self, players[id])
       }
     });
   });
+  this.socket.on('newPlayer', function(playerInfo){
+    addOtherPlayers(self, playerInfo)
+  });
+  this.socket.on('disconnect', function(playerId){
+    self.otherPlayers[playerId].destroy()
+  })
   // player1 = this.physics.add.sprite(400, 300, 'ship', 0);
   cursors = this.input.keyboard.createCursorKeys();
   // asteroids = this.physics.add.group();
@@ -84,4 +93,9 @@ function update (){
 
 function addPlayer(self, playerInfo){
   self.ship = self.physics.add.sprite(400, 300, 'ship', 0);
+}
+
+function addOtherPlayers(self, playerInfo){
+  const otherPlayer = self.physics.add.sprite(500, 200, 'ship', 0);
+  self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
