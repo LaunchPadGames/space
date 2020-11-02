@@ -33,6 +33,7 @@ function preload (){
 
 function create (){
   var self = this
+  self.ship = null
   self.otherPlayers = {}
   this.socket = io();
   this.socket.on('currentPlayers', function (players) {
@@ -51,7 +52,6 @@ function create (){
     self.otherPlayers[playerId].destroy()
   })
   // player1 = this.physics.add.sprite(400, 300, 'ship', 0);
-  cursors = this.input.keyboard.createCursorKeys();
   // asteroids = this.physics.add.group();
   // for (let i = 0; i < 12; i++) {
   //   const xPos = Phaser.Math.Between(0, 800);
@@ -61,38 +61,41 @@ function create (){
   //   let asteroid = asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
   //   asteroid.setVelocity(xVel, yVel);
   // }
+  this.cursors = this.input.keyboard.createCursorKeys();
 }
 
 function update (){
-  // if (cursors.up.isDown)
-  // {
-  //   this.physics.velocityFromRotation(player1.rotation, 200, player1.body.acceleration);
-  // }
-  // else if (cursors.down.isDown)
-  // {
-  //   this.physics.velocityFromRotation(player1.rotation, -200, player1.body.acceleration);
-  // }
-  // else
-  // {
-  //   player1.setAcceleration(0);
-  // }
+  if (!this.ship) return
+  if (this.cursors.up.isDown)
+  {
+    this.physics.velocityFromRotation(this.ship.rotation, 200, this.ship.body.acceleration);
+  }
+  else if (this.cursors.down.isDown)
+  {
+    this.physics.velocityFromRotation(this.ship.rotation, -200, this.ship.body.acceleration);
+  }
+  else
+  {
+    this.ship.setAcceleration(0);
+  }
 
-  // if (cursors.left.isDown)
-  // {
-  //   player1.setAngularVelocity(-300);
-  // }
-  // else if (cursors.right.isDown)
-  // {
-  //   player1.setAngularVelocity(300);
-  // }
-  // else
-  // {
-  //   player1.setAngularVelocity(0);
-  // }
+  if (this.cursors.left.isDown)
+  {
+    this.ship.setAngularVelocity(-300);
+  }
+  else if (this.cursors.right.isDown)
+  {
+    this.ship.setAngularVelocity(300);
+  }
+  else
+  {
+    this.ship.setAngularVelocity(0);
+  }
 }
 
 function addPlayer(self, playerInfo){
-  self.ship = self.physics.add.sprite(400, 300, 'ship', 0);
+  const ship = self.physics.add.sprite(400, 300, 'ship', 0);
+  self.ship = ship
 }
 
 function addOtherPlayers(self, playerInfo){
