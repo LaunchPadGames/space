@@ -30,6 +30,12 @@ io.on('connection', function (socket) {
     // emit a message to all players to remove this player
     io.emit('disconnect', socket.id);
   });
+  socket.on('playerMovement', function(movementData){
+    players[socket.id].x = movementData.x
+    players[socket.id].y = movementData.y
+    players[socket.id].rotation = movementData.rotation
+    socket.broadcast.emit('playerMoved', players[socket.id])
+  })
 });
 
 server.listen(port, () => {
