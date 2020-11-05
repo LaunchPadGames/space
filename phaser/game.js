@@ -16,15 +16,15 @@ var config = {
   }
 };
 
-var player1;
-var player2;
-var asteroids;
-var score = 0;
-var gameOver = false;
-var scoreText;
-var cursors;
 
-var game = new Phaser.Game(config);
+let setAsteroids;
+let asteroids;
+let score = 0;
+let gameOver = false;
+let scoreText;
+let cursors;
+
+let game = new Phaser.Game(config);
 
 function preload (){
   this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
@@ -32,9 +32,11 @@ function preload (){
 }
 
 function create (){
-  var self = this
+  let self = this
+  self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
+  this.asteroids = this.physics.add.group();
   this.socket = io();
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
@@ -56,20 +58,37 @@ function create (){
     otherPlayer.setRotation(playerInfo.rotation)
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
-  // player1 = this.physics.add.sprite(400, 300, 'ship', 0);
-  // asteroids = this.physics.add.group();
-  // for (let i = 0; i < 12; i++) {
-  //   const xPos = Phaser.Math.Between(0, 800);
-  //   const yPos = Phaser.Math.Between(0, 600);
-  //   const xVel = Phaser.Math.Between(-80, 80);
-  //   const yVel = Phaser.Math.Between(-80, 80);
-  //   let asteroid = asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
-  //   asteroid.setVelocity(xVel, yVel);
-  // }
+  // this.socket.on('setAsteroids', function(socketId){
+  //   this.asteroids = this.physics.add.group();
+  //   if(self.socket.id === socketId){
+  //     for (let i = 0; i < 12; i++) {
+  //       const xPos = Phaser.Math.Between(0, 800);
+  //       const yPos = Phaser.Math.Between(0, 600);
+  //       const xVel = Phaser.Math.Between(-80, 80);
+  //       const yVel = Phaser.Math.Between(-80, 80);
+  //       let asteroid = this.asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
+  //       asteroid.index = i
+  //       this.asteroidArray.push(asteroid.setVelocity(xVel, yVel))
+  //     }
+  //   }
+  // })
+
+  // this.socket.on('asteroidPositions', function(asteroidArray){
+  //   this.asteroids = this.physics.add.group();
+  //   asteroidArray.forEach(function(asteroid, index){
+  //     this.asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
+  //   })
+  // })
   this.cursors = this.input.keyboard.createCursorKeys();
 }
 
 function update (){
+  // console.log('this.asteroidArray[0] (x, y): ', `(${this.asteroidArray[0].x}, ${this.asteroidArray[0].y})`)
+  // if(this.asteroidArray.length > 0){
+  //   this.socket.emit('updateAsteroidPositions', this.asteroidArray.map(function(asteroid){
+  //     return { index: asteroid.index, x: asteroid.x, y: asteroid.y }
+  //   }))
+  // }
   if(this.ship){
     if (this.cursors.up.isDown)
     {

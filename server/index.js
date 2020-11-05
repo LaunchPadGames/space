@@ -18,6 +18,9 @@ io.on('connection', function (socket) {
     playerId: socket.id,
     team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
   };
+  // if(Object.keys(players).length === 2){
+  //   socket.emit('setAsteroids', socket.id)
+  // }
   console.log('players: ', players)
   // send the players object to the new player
   socket.emit('currentPlayers', players);
@@ -36,6 +39,9 @@ io.on('connection', function (socket) {
     players[socket.id].rotation = movementData.rotation
     socket.broadcast.emit('playerMoved', players[socket.id])
   })
+  // socket.on('updateAsteroidPositions', function(asteroidArray){
+  //   socket.broadcast.emit('asteroidPositions', asteroidArray)
+  // })
 });
 
 server.listen(port, () => {
