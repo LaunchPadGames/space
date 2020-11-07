@@ -60,10 +60,8 @@ function create (){
    this.socket.on('createAsteroids', function(asteroidArray){
      self.asteroids = self.physics.add.group();
      asteroidArray.forEach((asteroid) => {
-       console.log('Phaser.Math.Between(0, 800): ', Phaser.Math.Between(0, 800))
-      // let phaserAsteroid = self.asteroids.create(asteroidArray.x, asteroidArray.y, 'asteroids', 6).setScale(asteroid.scale)
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
-      console.log('phaserAsteroid: ', phaserAsteroid)
+      phaserAsteroid.setScale(asteroid.scale)
       phaserAsteroid.index = asteroid.index
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
