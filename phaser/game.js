@@ -61,8 +61,13 @@ function create (){
    this.socket.on('createAsteroids', function(asteroidArray){
      self.asteroids = self.physics.add.group();
      asteroidArray.forEach((asteroid) => {
-      let phaserAsteroid = self.asteroids.create(asteroidArray.x, asteroidArray.y, 'asteroids', 6).setScale(asteroid.scale)
+       console.log('asteroid: ', asteroid)
+      // let phaserAsteroid = self.asteroids.create(asteroidArray.x, asteroidArray.y, 'asteroids', 6).setScale(asteroid.scale)
+      let phaserAsteroid = self.asteroids.create(asteroidArray.x, asteroidArray.y, 'asteroids', 6)
+      console.log('phaserAsteroid: ', phaserAsteroid)
       phaserAsteroid.index = asteroid.index
+      phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
+
      })
   })
   this.cursors = this.input.keyboard.createCursorKeys();
