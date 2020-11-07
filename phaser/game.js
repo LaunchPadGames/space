@@ -58,37 +58,17 @@ function create (){
     otherPlayer.setRotation(playerInfo.rotation)
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
-  // this.socket.on('setAsteroids', function(socketId){
-  //   this.asteroids = this.physics.add.group();
-  //   if(self.socket.id === socketId){
-  //     for (let i = 0; i < 12; i++) {
-  //       const xPos = Phaser.Math.Between(0, 800);
-  //       const yPos = Phaser.Math.Between(0, 600);
-  //       const xVel = Phaser.Math.Between(-80, 80);
-  //       const yVel = Phaser.Math.Between(-80, 80);
-  //       let asteroid = this.asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
-  //       asteroid.index = i
-  //       this.asteroidArray.push(asteroid.setVelocity(xVel, yVel))
-  //     }
-  //   }
-  // })
-
-  // this.socket.on('asteroidPositions', function(asteroidArray){
-  //   this.asteroids = this.physics.add.group();
-  //   asteroidArray.forEach(function(asteroid, index){
-  //     this.asteroids.create(xPos, yPos, 'asteroids', 6).setScale(Phaser.Math.FloatBetween(0.5, 3))
-  //   })
-  // })
+   this.socket.on('createAsteroids', function(asteroidArray){
+     self.asteroids = self.physics.add.group();
+     asteroidArray.forEach((asteroid) => {
+      let phaserAsteroid = self.asteroids.create(asteroidArray.x, asteroidArray.y, 'asteroids', 6).setScale(asteroid.scale)
+      phaserAsteroid.index = asteroid.index
+     })
+  })
   this.cursors = this.input.keyboard.createCursorKeys();
 }
 
 function update (){
-  // console.log('this.asteroidArray[0] (x, y): ', `(${this.asteroidArray[0].x}, ${this.asteroidArray[0].y})`)
-  // if(this.asteroidArray.length > 0){
-  //   this.socket.emit('updateAsteroidPositions', this.asteroidArray.map(function(asteroid){
-  //     return { index: asteroid.index, x: asteroid.x, y: asteroid.y }
-  //   }))
-  // }
   if(this.ship){
     if (this.cursors.up.isDown)
     {

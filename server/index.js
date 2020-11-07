@@ -6,6 +6,8 @@ const io = require('socket.io').listen(server)
 const port = 3000
 
 const players = {}
+const asteroidHash = {}
+const asteroidArray = []
 
 app.use('/', express.static('phaser'));
 
@@ -18,10 +20,16 @@ io.on('connection', function (socket) {
     playerId: socket.id,
     team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
   };
-  // if(Object.keys(players).length === 2){
-  //   socket.emit('setAsteroids', socket.id)
-  // }
+  if(Object.keys(players).length === 2){
+    for(let i = 0; i < 12; i++){
+      asteroidArray.push({x: Math.floor(Math.random() * 800), y: Math.floor(Math.random() * 600), index: i, scale: Math.random() * (3 - 0.5) + 0.5})
+      asteroidHash[i] = true
+    }
+    io.sockets.emit('createAsteroids', asteroidArray)
+  }
   console.log('players: ', players)
+  console.log('asteroidHash: ', asteroidHash)
+  console.log('asteroidArray: ', asteroidArray)
   // send the players object to the new player
   socket.emit('currentPlayers', players);
   // update all other players of the new player
