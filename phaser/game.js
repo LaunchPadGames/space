@@ -116,10 +116,18 @@ function update (){
 
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  ship.setCollideWorldBounds(true);
+  self.physics.add.overlap(ship, self.asteroids, crash, null, this)
   self.ship = ship
 }
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  otherPlayer.setCollideWorldBounds(true);
+  self.physics.add.overlap(otherPlayer, self.asteroids, crash, null, this)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
+}
+
+function crash(player, asteroid){
+  asteroid.disableBody(true, true);
 }
