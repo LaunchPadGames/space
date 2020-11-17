@@ -60,6 +60,13 @@ io.on('connection', function (socket) {
       players[socket.id].rotation = movementData.rotation
       socket.broadcast.emit('playerMoved', players[socket.id])
     })
+
+    socket.on('laserShot', function(data) {
+      if (players[socket.id] == null) return;
+      let laser = data;
+      data.owner_id = socket.id;
+      socket.broadcast.emit('laserUpdate', laser, socket.id)
+    })
   }
 });
 

@@ -23,6 +23,8 @@ let score = 0;
 let gameOver = false;
 let scoreText;
 let cursors;
+let lastFired = 100;
+let socket;
 let startScreen;
 let gameStarted = false;
 let selector;
@@ -36,6 +38,8 @@ function preload (){
   this.load.image('title', 'assets/start_title.png')
   this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
+  this.load.image('laserGreen', 'assets/laserGreenR.png')
+  this.load.image('laserBlue', 'assets/laserBlueR.png')
 }
 
 function create (){
@@ -51,10 +55,13 @@ function create (){
   selector = self.add.sprite(110, selectorYPos1, 'ship').setScale(0.65)
   startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
 
+  // Lasers
+  this.laserGroup = new LaserGroup(this);
+
   self.cursors = this.input.keyboard.createCursorKeys();
 }
 
-function update() {
+function update(time) {
   if (!gameStarted) {
     if (this.cursors.up.isDown) {
       selector.y = selectorYPos1
@@ -97,6 +104,11 @@ function update() {
       this.ship.setAngularVelocity(0);
     }
 
+    if (this.cursors.space.isDown && time > lastFired + 50) {
+      this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
+      lastFired = time;
+    }
+
     let x = this.ship.x
     let y = this.ship.y
     let r = this.ship.rotation
@@ -127,6 +139,53 @@ function addOtherPlayers(self, playerInfo){
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
 
+class LaserGroup extends Phaser.Physics.Arcade.Group
+{
+  constructor(scene) {
+    super(scene.physics.world, scene);
+
+    this.createMultiple({
+      classType: Laser,
+      frameQuantity: 30, // 30 instances of Laser
+      active: false,
+      visible: false,
+      key: 'laserGreen'
+    })
+  }
+
+  fireLaser(x, y, r) {
+    const laser = this.getFirstDead(true, x, y, 'laserGreen');
+    if (laser) {
+      laser.fire(x, y, r);
+    }
+  }
+}
+
+class Laser extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y, sprite = 'laserGreen') {
+    super(scene, x, y, sprite);
+  }
+
+  fire(x, y, r, emit = true) {
+    this.body.reset(x, y);
+    this.setActive(true);
+    this.setVisible(true);
+    this.setAngle(r)
+    this.setScale(0.5)
+    this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
+    if (emit && socket) socket.emit('laserShot', { x: x, y: y, rotation: r })
+  }
+
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta);
+
+    if (this.y <= 0) {
+      this.setActive(false);
+      this.setVisible(false);
+    }
+  }
+}
+
 function crash(player, asteroid){
   asteroid.disableBody(true, true);
 }
@@ -136,7 +195,8 @@ function clearStartScreen() {
 }
 
 function startSocketActions(self, allowedPlayersCount) {
-  self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}`});
+  self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
+  socket = this.socket;
   self.socket.on('inProgress', function () {
     clearStartScreen()
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
@@ -170,5 +230,11 @@ function startSocketActions(self, allowedPlayersCount) {
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
     })
+  })
+  self.socket.on('laserUpdate', function(laser, owner) {
+    let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
+    self.add.existing(laser_instance);
+    self.physics.add.existing(laser_instance);
+    laser_instance.fire(laser.x, laser.y, laser.rotation, false);
   })
 }
