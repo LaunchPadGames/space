@@ -13,7 +13,7 @@ app.use('/', express.static('phaser'));
 
 io.on('connection', function (socket) {
   const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-  const currentPlayersCount = Object.keys(players).length
+  var currentPlayersCount = Object.keys(players).length
   if (currentPlayersCount >= allowedPlayersCount) {
     socket.emit('inProgress');
   } else {
@@ -25,6 +25,7 @@ io.on('connection', function (socket) {
       playerId: socket.id,
       team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
     };
+    currentPlayersCount ++
     if(currentPlayersCount === allowedPlayersCount){
       for(let i = 0; i < 12; i++){
         asteroidArray.push({
