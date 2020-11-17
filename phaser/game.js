@@ -1,7 +1,10 @@
+let canvasWidth = 1000;
+let canvasHeight = 800;
+
 var config = {
   type: Phaser.AUTO,
-  width: 1000,
-  height: 800,
+  width: canvasWidth,
+  height: canvasHeight,
   physics: {
       default: 'arcade',
       arcade: {
@@ -73,11 +76,11 @@ function update() {
   if (this.ship) {
     if (this.cursors.up.isDown)
     {
-      this.physics.velocityFromRotation(this.ship.rotation, 200, this.ship.body.acceleration);
+      this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
     }
     else if (this.cursors.down.isDown)
     {
-      this.physics.velocityFromRotation(this.ship.rotation, -200, this.ship.body.acceleration);
+      this.physics.velocityFromRotation(this.ship.rotation, -100, this.ship.body.acceleration);
     }
     else
     {
@@ -97,6 +100,11 @@ function update() {
       this.ship.setAngularVelocity(0);
     }
 
+    if (this.ship.x < 0) this.ship.x = canvasWidth
+    if (this.ship.x > canvasWidth) this.ship.x = 0
+    if (this.ship.y < 0) this.ship.y = canvasHeight
+    if (this.ship.y > canvasHeight) this.ship.y = 0
+
     let x = this.ship.x
     let y = this.ship.y
     let r = this.ship.rotation
@@ -115,15 +123,15 @@ function update() {
 
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
-  ship.setCollideWorldBounds(true);
   self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  ship.setMaxVelocity(150, 150)
   self.ship = ship
 }
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
-  otherPlayer.setCollideWorldBounds(true);
   self.physics.add.overlap(otherPlayer, self.asteroids, crash, null, this)
+  otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
 
