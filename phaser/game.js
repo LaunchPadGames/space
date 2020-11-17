@@ -23,10 +23,17 @@ let score = 0;
 let gameOver = false;
 let scoreText;
 let cursors;
+let startScreen;
+let gameStarted = false;
+let selector;
+let selectorYPos1 = 583;
+let selectorYPos2 = 653;
 
 let game = new Phaser.Game(config);
 
 function preload (){
+  this.load.image('space', 'assets/start_bkgd.jpg')
+  this.load.image('title', 'assets/start_title.png')
   this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
 }
@@ -36,42 +43,34 @@ function create (){
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
-  this.socket = io();
-  this.socket.on('currentPlayers', function (players) {
-    Object.keys(players).forEach(function (id) {
-      if (players[id].playerId === self.socket.id) {
-        addPlayer(self, players[id]);
-      } else {
-        addOtherPlayers(self, players[id])
-      }
-    });
-  });
-  this.socket.on('newPlayer', function(playerInfo){
-    addOtherPlayers(self, playerInfo)
-  });
-  this.socket.on('disconnect', function(playerId){
-    self.otherPlayers[playerId].destroy()
-  })
-  this.socket.on('playerMoved', function(playerInfo){
-    otherPlayer = self.otherPlayers[playerInfo.playerId]
-    otherPlayer.setRotation(playerInfo.rotation)
-    otherPlayer.setPosition(playerInfo.x, playerInfo.y)
-  })
-   this.socket.on('createAsteroids', function(asteroidArray){
-     self.asteroids = self.physics.add.group();
-     asteroidArray.forEach((asteroid) => {
-      let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
-      phaserAsteroid.setScale(asteroid.scale)
-      phaserAsteroid.index = asteroid.index
-      phaserAsteroid.setPosition(asteroid.x, asteroid.y)
-      phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
-     })
-  })
-  this.cursors = this.input.keyboard.createCursorKeys();
+
+  startBkgd = self.add.image(500, 400, 'space')
+  title = self.add.image(500, 200, 'title')
+  onePlayerOption = self.add.text(150, 570, 'Start 1 Player Game'.toUpperCase(), { fontSize: '32px' });
+  twoPlayerOption = self.add.text(150, 640, 'Start/Join 2 Player Game'.toUpperCase(), { fontSize: '32px' });
+  selector = self.add.sprite(110, selectorYPos1, 'ship').setScale(0.65)
+  startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
+
+  self.cursors = this.input.keyboard.createCursorKeys();
 }
 
-function update (){
-  if(this.ship){
+function update() {
+  if (!gameStarted) {
+    if (this.cursors.up.isDown) {
+      selector.y = selectorYPos1
+    }
+    if (this.cursors.down.isDown) {
+      selector.y = selectorYPos2
+    }
+    if (this.cursors.space.isDown) {
+      gameStarted = true
+      clearStartScreen()
+      const allowedPlayersCount = selector.y === selectorYPos1 ? 1 : 2
+      startSocketActions(this, allowedPlayersCount)
+    }
+  }
+
+  if (this.ship) {
     if (this.cursors.up.isDown)
     {
       this.physics.velocityFromRotation(this.ship.rotation, 200, this.ship.body.acceleration);
@@ -130,4 +129,46 @@ function addOtherPlayers(self, playerInfo){
 
 function crash(player, asteroid){
   asteroid.disableBody(true, true);
+}
+
+function clearStartScreen() {
+  startScreen.forEach((pageElement) => pageElement.destroy())
+}
+
+function startSocketActions(self, allowedPlayersCount) {
+  self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}`});
+  self.socket.on('inProgress', function () {
+    clearStartScreen()
+    self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
+  })
+  self.socket.on('currentPlayers', function (players) {
+    Object.keys(players).forEach(function (id) {
+      if (players[id].playerId === self.socket.id) {
+        addPlayer(self, players[id]);
+      } else {
+        addOtherPlayers(self, players[id])
+      }
+    });
+  });
+  self.socket.on('newPlayer', function(playerInfo){
+    addOtherPlayers(self, playerInfo)
+  });
+  self.socket.on('disconnect', function(playerId){
+    self.otherPlayers[playerId].destroy()
+  })
+  self.socket.on('playerMoved', function(playerInfo){
+    otherPlayer = self.otherPlayers[playerInfo.playerId]
+    otherPlayer.setRotation(playerInfo.rotation)
+    otherPlayer.setPosition(playerInfo.x, playerInfo.y)
+  })
+  self.socket.on('createAsteroids', function (asteroidArray) {
+    self.asteroids = self.physics.add.group();
+    asteroidArray.forEach((asteroid) => {
+      let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
+      phaserAsteroid.setScale(asteroid.scale)
+      phaserAsteroid.index = asteroid.index
+      phaserAsteroid.setPosition(asteroid.x, asteroid.y)
+      phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
+    })
+  })
 }
