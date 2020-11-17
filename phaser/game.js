@@ -23,6 +23,7 @@ let score = 0;
 let gameOver = false;
 let scoreText;
 let cursors;
+let socket = null
 
 let game = new Phaser.Game(config);
 
@@ -37,6 +38,7 @@ function create (){
   self.ship = null
   self.otherPlayers = {}
   this.socket = io();
+  socket = this.socket
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
@@ -65,6 +67,11 @@ function create (){
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
      })
+  })
+  this.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
+    self.asteroids.children.entries.forEach((asteroid) => {
+      if (asteroid.index === asteroidIndex) asteroid.destroy()
+    })
   })
   this.cursors = this.input.keyboard.createCursorKeys();
 }
@@ -128,7 +135,11 @@ function addOtherPlayers(self, playerInfo){
 }
 
 function crash(player, asteroid){
+  console.log(asteroid)
+  socket.emit('destroyAsteroid', asteroid.index)
+
   asteroid.destroy()
+
   player.disableBody(true, true);
   resetPlayer(player)
 }

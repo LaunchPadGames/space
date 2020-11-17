@@ -54,6 +54,10 @@ io.on('connection', function (socket) {
     players[socket.id].rotation = movementData.rotation
     socket.broadcast.emit('playerMoved', players[socket.id])
   })
+  socket.on('destroyAsteroid', function(asteroidIndex){
+    asteroidHash[asteroidIndex] = false
+    socket.broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+  })
 });
 
 server.listen(port, () => {
