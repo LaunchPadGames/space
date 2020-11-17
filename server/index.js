@@ -8,6 +8,7 @@ const port = 3000
 const players = {}
 const asteroidHash = {}
 const asteroidArray = []
+const laserArray = []
 
 app.use('/', express.static('phaser'));
 
@@ -53,6 +54,14 @@ io.on('connection', function (socket) {
     players[socket.id].y = movementData.y
     players[socket.id].rotation = movementData.rotation
     socket.broadcast.emit('playerMoved', players[socket.id])
+  })
+
+  socket.on('laserShot', function(data) {
+    if (players[socket.id] == null) return;
+    let laser = data;
+    data.owner_id = socket.id;
+    laserArray.push(laser);
+    socket.broadcast.emit('laserUpdate', laser, socket.id)
   })
 });
 

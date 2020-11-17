@@ -24,12 +24,15 @@ let gameOver = false;
 let scoreText;
 let cursors;
 let lastFired = 100;
+let socket;
 
 let game = new Phaser.Game(config);
 
 function preload (){
   this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
+  this.load.image('laserGreen', 'assets/laserGreenR.png')
+  this.load.image('laserBlue', 'assets/laserBlueR.png')
 }
 
 function create (){
@@ -38,6 +41,7 @@ function create (){
   self.ship = null
   self.otherPlayers = {}
   this.socket = io();
+  socket = this.socket;
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
@@ -72,6 +76,13 @@ function create (){
 
   // Lasers
   this.laserGroup = new LaserGroup(this);
+
+  this.socket.on('laserUpdate', function(laser, owner) {
+    let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
+    self.add.existing(laser_instance);
+    self.physics.add.existing(laser_instance);
+    laser_instance.fire(laser.x, laser.y, laser.rotation, false);
+  })
 }
 
 function update (time){
@@ -143,12 +154,12 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
       frameQuantity: 30, // 30 instances of Laser
       active: false,
       visible: false,
-      key: 'laser'
+      key: 'laserGreen'
     })
   }
 
   fireLaser(x, y, r) {
-    const laser = this.getFirstDead(true);
+    const laser = this.getFirstDead(true, x, y, 'laserGreen');
     if (laser) {
       laser.fire(x, y, r);
     }
@@ -156,16 +167,18 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 }
 
 class Laser extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y) {
-    super(scene, x, y, 'laser');
+  constructor(scene, x, y, sprite = 'laserGreen') {
+    super(scene, x, y, sprite);
   }
 
-  fire(x, y, r) {
+  fire(x, y, r, emit = true) {
     this.body.reset(x, y);
     this.setActive(true);
     this.setVisible(true);
     this.setAngle(r)
+    this.setScale(0.5)
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
+    if (emit) socket.emit('laserShot', { x: x, y: y, rotation: r })
   }
 
   preUpdate(time, delta) {
