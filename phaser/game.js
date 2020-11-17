@@ -58,7 +58,6 @@ function create (){
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
    this.socket.on('createAsteroids', function(asteroidArray){
-     self.asteroids = self.physics.add.group();
      asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)
@@ -117,14 +116,14 @@ function update (){
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.setCollideWorldBounds(true);
+  self.asteroids = self.physics.add.group();
+  console.log('asteroids addPlayer', self.asteroids)
   self.physics.add.overlap(ship, self.asteroids, crash, null, this)
   self.ship = ship
 }
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
-  otherPlayer.setCollideWorldBounds(true);
-  self.physics.add.overlap(otherPlayer, self.asteroids, crash, null, this)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
 
