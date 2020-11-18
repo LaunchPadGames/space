@@ -24,6 +24,7 @@ let gameOver = false;
 let scoreText;
 let cursors;
 let socket = null
+let physics = null
 
 let game = new Phaser.Game(config);
 
@@ -39,6 +40,7 @@ function create (){
   self.otherPlayers = {}
   this.socket = io();
   socket = this.socket
+  physics = this.physics
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
@@ -131,9 +133,10 @@ function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.setCollideWorldBounds(true);
   self.asteroids = self.physics.add.group();
-  self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  asteroids = self.asteroids
+  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  overlap.name = socket.id
   self.ship = ship
-  // pauseCollider(ship)
 }
 
 function addOtherPlayers(self, playerInfo){
@@ -154,9 +157,16 @@ function resetPlayer(player) {
     player.enableBody(true, player.body.x, player.body.y, true, true)
     socket.emit('enablePlayer', socket.id)
     pauseCollider(player)
-  }, 2000)
+  }, 500)
 }
 
-// function pauseCollider(player) {
-//   console.log(game)
-// }
+function pauseCollider(player) {
+  setTimeout(() => {
+    overlap = physics.add.overlap(player, asteroids, crash, null, this)
+    overlap.name = socket.id
+  }, 2000)
+  const collider = physics.world.colliders.getActive().find(function(collider){
+    return collider.name === socket.id
+  })
+  collider.destroy()
+}
