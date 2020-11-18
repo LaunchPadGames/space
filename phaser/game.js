@@ -115,7 +115,7 @@ function update(time) {
       this.ship.setAngularVelocity(0);
     }
 
-    if (this.cursors.space.isDown && time > lastFired + 200) {
+    if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
       this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
       lastFired = time;
     }
@@ -194,15 +194,6 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
-  }
-
-  preUpdate(time, delta) {
-    super.preUpdate(time, delta);
-
-    if (this.y <= 0) {
-      this.setActive(false);
-      this.setVisible(false);
-    }
   }
 }
 
