@@ -33,7 +33,6 @@ let gameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
-let scene;
 
 let game = new Phaser.Game(config);
 
@@ -48,7 +47,6 @@ function preload (){
 
 function create (){
   let self = this;
-  scene = this;
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
