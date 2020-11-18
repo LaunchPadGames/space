@@ -239,7 +239,7 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
-  laser.disableBody(true, true);
+  laser.destroy();
   if (laser.texture.key === 'laserGreen') {
     score += 10;
   } else {
