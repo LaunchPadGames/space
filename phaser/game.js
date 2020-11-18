@@ -23,8 +23,10 @@ var config = {
 let setAsteroids;
 let asteroids;
 let score = 0;
+let scoreOther = 0;
 let gameOver = false;
 let scoreText;
+let scoreTextOther;
 let cursors;
 let lastFired = 100;
 let socket;
@@ -66,6 +68,8 @@ function create (){
   this.laserGroup = new LaserGroup(this);
 
   self.cursors = this.input.keyboard.createCursorKeys();
+  scoreText = this.add.text(5, 5, 'Your Score: 0')
+  scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
 }
 
 function update(time) {
@@ -111,7 +115,7 @@ function update(time) {
       this.ship.setAngularVelocity(0);
     }
 
-    if (this.cursors.space.isDown && time > lastFired + 50) {
+    if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
       this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
       lastFired = time;
     }
@@ -187,17 +191,9 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true);
     this.setAngle(r)
     this.setScale(0.5)
+    this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
-  }
-
-  preUpdate(time, delta) {
-    super.preUpdate(time, delta);
-
-    if (this.y <= 0) {
-      this.setActive(false);
-      this.setVisible(false);
-    }
   }
 }
 
@@ -229,6 +225,18 @@ function pauseCollider(player) {
     return collider.name === socket.id
   })
   collider.destroy()
+}
+
+
+function destroyAsteroid(laser, asteroid) {
+  asteroid.disableBody(true, true);
+  laser.destroy();
+  if (laser.texture.key === 'laserGreen') {
+    score += 10;
+  } else {
+    scoreOther += 10;
+  }
+  updateText();
 }
 
 function clearStartScreen() {
@@ -277,7 +285,8 @@ function startSocketActions(self, allowedPlayersCount) {
     self.add.existing(laser_instance);
     self.physics.add.existing(laser_instance);
     laser_instance.fire(laser.x, laser.y, laser.rotation, false);
-  })
+    self.physics.add.overlap(laser_instance, self.asteroids, destroyAsteroid);
+  });
   self.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
     self.asteroids.children.entries.forEach(function(asteroid) {
       if (asteroid.index === asteroidIndex) asteroid.destroy()
@@ -290,4 +299,9 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
+}
+
+function updateText() {
+  scoreText.setText('Your Score: ' + score);
+  scoreTextOther.setText('Opponent Score: ' + scoreOther);
 }
