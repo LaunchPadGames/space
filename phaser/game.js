@@ -30,6 +30,7 @@ let scoreTextOther;
 let cursors;
 let lastFired = 100;
 let socket;
+let physics;
 let startScreen;
 let gameStarted = false;
 let selector;
@@ -52,6 +53,9 @@ function create (){
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
+  // this.socket = io();
+  // socket = this.socket
+  physics = this.physics
 
   startBkgd = self.add.image(500, 400, 'space')
   title = self.add.image(500, 200, 'title')
@@ -139,14 +143,17 @@ function update(time) {
 
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
-  self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  self.asteroids = self.physics.add.group();
+  asteroids = self.asteroids
+  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  console.log(overlap)
+  overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
 }
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
-  self.physics.add.overlap(otherPlayer, self.asteroids, crash, null, this)
   otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
@@ -200,7 +207,33 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 }
 
 function crash(player, asteroid){
-  asteroid.disableBody(true, true);
+  console.log('in crash')
+  console.log(socket)
+  console.log(this.socket)
+  asteroid.destroy()
+  socket.emit('destroyAsteroid', asteroid.index)
+  player.disableBody(true, true);
+  socket.emit('disablePlayer', socket.id)
+  resetPlayer(player)
+}
+
+function resetPlayer(player) {
+  setTimeout(() => {
+    player.enableBody(true, player.body.x, player.body.y, true, true)
+    socket.emit('enablePlayer', socket.id)
+    pauseCollider(player)
+  }, 500)
+}
+
+function pauseCollider(player) {
+  setTimeout(() => {
+    overlap = physics.add.overlap(player, asteroids, crash, null, this)
+    overlap.name = socket.id
+  }, 2000)
+  const collider = physics.world.colliders.getActive().find(function(collider){
+    return collider.name === socket.id
+  })
+  collider.destroy()
 }
 
 
@@ -221,7 +254,7 @@ function clearStartScreen() {
 
 function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
-  socket = this.socket;
+  socket = self.socket;
   self.socket.on('inProgress', function () {
     clearStartScreen()
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
@@ -247,7 +280,7 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
-    self.asteroids = self.physics.add.group();
+    // self.asteroids = self.physics.add.group();
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)
@@ -263,6 +296,18 @@ function startSocketActions(self, allowedPlayersCount) {
     laser_instance.fire(laser.x, laser.y, laser.rotation, false);
     self.physics.add.overlap(laser_instance, self.asteroids, destroyAsteroid);
   });
+  self.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
+    self.asteroids.children.entries.forEach(function(asteroid) {
+      if (asteroid.index === asteroidIndex) asteroid.destroy()
+    })
+  })
+  self.socket.on('disableOtherPlayer', function(socketId){
+    self.otherPlayers[socketId].disableBody(true, true);
+  })
+  self.socket.on('enableOtherPlayer', function(socketId){
+    otherPlayer = self.otherPlayers[socketId]
+    otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
+  })
 }
 
 function updateText() {
