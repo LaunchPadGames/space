@@ -23,8 +23,10 @@ var config = {
 let setAsteroids;
 let asteroids;
 let score = 0;
+let scoreOther = 0;
 let gameOver = false;
 let scoreText;
+let scoreTextOther;
 let cursors;
 let lastFired = 100;
 let socket;
@@ -33,7 +35,6 @@ let gameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
-let scene;
 
 let game = new Phaser.Game(config);
 
@@ -48,7 +49,6 @@ function preload (){
 
 function create (){
   let self = this;
-  scene = this;
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
@@ -64,6 +64,8 @@ function create (){
   this.laserGroup = new LaserGroup(this);
 
   self.cursors = this.input.keyboard.createCursorKeys();
+  scoreText = this.add.text(5, 5, 'Your Score: 0')
+  scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
 }
 
 function update(time) {
@@ -109,7 +111,7 @@ function update(time) {
       this.ship.setAngularVelocity(0);
     }
 
-    if (this.cursors.space.isDown && time > lastFired + 50) {
+    if (this.cursors.space.isDown && time > lastFired + 200) {
       this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
       lastFired = time;
     }
@@ -182,6 +184,7 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true);
     this.setAngle(r)
     this.setScale(0.5)
+    this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
   }
@@ -198,6 +201,18 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 
 function crash(player, asteroid){
   asteroid.disableBody(true, true);
+}
+
+
+function destroyAsteroid(laser, asteroid) {
+  asteroid.disableBody(true, true);
+  laser.disableBody(true, true);
+  if (laser.texture.key === 'laserGreen') {
+    score += 10;
+  } else {
+    scoreOther += 10;
+  }
+  updateText();
 }
 
 function clearStartScreen() {
@@ -246,5 +261,11 @@ function startSocketActions(self, allowedPlayersCount) {
     self.add.existing(laser_instance);
     self.physics.add.existing(laser_instance);
     laser_instance.fire(laser.x, laser.y, laser.rotation, false);
-  })
+    self.physics.add.overlap(laser_instance, self.asteroids, destroyAsteroid);
+  });
+}
+
+function updateText() {
+  scoreText.setText('Your Score: ' + score);
+  scoreTextOther.setText('Opponent Score: ' + scoreOther);
 }
