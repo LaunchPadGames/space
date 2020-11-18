@@ -69,9 +69,16 @@ function create (){
      })
   })
   this.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
-    self.asteroids.children.entries.forEach((asteroid) => {
+    self.asteroids.children.entries.forEach(function(asteroid) {
       if (asteroid.index === asteroidIndex) asteroid.destroy()
     })
+  })
+  this.socket.on('disableOtherPlayer', function(socketId){
+    self.otherPlayers[socketId].disableBody(true, true);
+  })
+  this.socket.on('enableOtherPlayer', function(socketId){
+    otherPlayer = self.otherPlayers[socketId]
+    otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
   this.cursors = this.input.keyboard.createCursorKeys();
 }
@@ -124,9 +131,9 @@ function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.setCollideWorldBounds(true);
   self.asteroids = self.physics.add.group();
-  console.log('asteroids addPlayer', self.asteroids)
   self.physics.add.overlap(ship, self.asteroids, crash, null, this)
   self.ship = ship
+  // pauseCollider(ship)
 }
 
 function addOtherPlayers(self, playerInfo){
@@ -135,17 +142,21 @@ function addOtherPlayers(self, playerInfo){
 }
 
 function crash(player, asteroid){
-  console.log(asteroid)
-  socket.emit('destroyAsteroid', asteroid.index)
-
   asteroid.destroy()
-
+  socket.emit('destroyAsteroid', asteroid.index)
   player.disableBody(true, true);
+  socket.emit('disablePlayer', socket.id)
   resetPlayer(player)
 }
 
 function resetPlayer(player) {
   setTimeout(() => {
     player.enableBody(true, player.body.x, player.body.y, true, true)
+    socket.emit('enablePlayer', socket.id)
+    pauseCollider(player)
   }, 2000)
 }
+
+// function pauseCollider(player) {
+//   console.log(game)
+// }

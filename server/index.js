@@ -53,10 +53,16 @@ io.on('connection', function (socket) {
     players[socket.id].y = movementData.y
     players[socket.id].rotation = movementData.rotation
     socket.broadcast.emit('playerMoved', players[socket.id])
-  })
+  });
   socket.on('destroyAsteroid', function(asteroidIndex){
     asteroidHash[asteroidIndex] = false
     socket.broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+  });
+  socket.on('disablePlayer', function(socketId){
+    socket.broadcast.emit('disableOtherPlayer', socketId)
+  })
+  socket.on('enablePlayer', function(socketId){
+    socket.broadcast.emit('enableOtherPlayer', socketId)
   })
 });
 
