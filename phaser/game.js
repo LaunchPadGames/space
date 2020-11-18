@@ -274,15 +274,15 @@ function startSocketActions(self, allowedPlayersCount) {
     self.physics.add.existing(laser_instance);
     laser_instance.fire(laser.x, laser.y, laser.rotation, false);
   })
-  this.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
+  self.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){
     self.asteroids.children.entries.forEach(function(asteroid) {
       if (asteroid.index === asteroidIndex) asteroid.destroy()
     })
   })
-  this.socket.on('disableOtherPlayer', function(socketId){
+  self.socket.on('disableOtherPlayer', function(socketId){
     self.otherPlayers[socketId].disableBody(true, true);
   })
-  this.socket.on('enableOtherPlayer', function(socketId){
+  self.socket.on('enableOtherPlayer', function(socketId){
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
