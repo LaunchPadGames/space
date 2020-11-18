@@ -14,6 +14,8 @@ app.use('/', express.static('phaser'));
 io.on('connection', function (socket) {
   const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
   var currentPlayersCount = Object.keys(players).length
+  console.log('playerCount ==> ', allowedPlayersCount)
+  console.log('currentPlayerCount ==> ', currentPlayersCount)
   if (currentPlayersCount >= allowedPlayersCount) {
     socket.emit('inProgress');
   } else {
@@ -26,6 +28,10 @@ io.on('connection', function (socket) {
       team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
     };
     currentPlayersCount ++
+    // send the players object to the new player
+    socket.emit('currentPlayers', players);
+    // update all other players of the new player
+    socket.broadcast.emit('newPlayer', players[socket.id]);
     if(currentPlayersCount === allowedPlayersCount){
       for(let i = 0; i < 12; i++){
         asteroidArray.push({
@@ -43,10 +49,6 @@ io.on('connection', function (socket) {
     console.log('players: ', players)
     console.log('asteroidHash: ', asteroidHash)
     console.log('asteroidArray: ', asteroidArray)
-    // send the players object to the new player
-    socket.emit('currentPlayers', players);
-    // update all other players of the new player
-    socket.broadcast.emit('newPlayer', players[socket.id]);
     socket.on('disconnect', function () {
       console.log('user disconnected');
       // remove this player from our players object
@@ -66,6 +68,16 @@ io.on('connection', function (socket) {
       let laser = data;
       data.owner_id = socket.id;
       socket.broadcast.emit('laserUpdate', laser, socket.id)
+    })
+    socket.on('destroyAsteroid', function(asteroidIndex){
+      asteroidHash[asteroidIndex] = false
+      socket.broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+    });
+    socket.on('disablePlayer', function(socketId){
+      socket.broadcast.emit('disableOtherPlayer', socketId)
+    })
+    socket.on('enablePlayer', function(socketId){
+      socket.broadcast.emit('enableOtherPlayer', socketId)
     })
   }
 });
