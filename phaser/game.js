@@ -46,7 +46,7 @@ function preload (){
 }
 
 function create (){
-  let self = this
+  let self = this;
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
@@ -181,7 +181,7 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setAngle(r)
     this.setScale(0.5)
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
-    if (emit && socket) socket.emit('laserShot', { x: x, y: y, rotation: r })
+    if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
   }
 
   preUpdate(time, delta) {
