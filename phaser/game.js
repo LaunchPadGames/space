@@ -51,8 +51,8 @@ function create (){
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
-  this.socket = io();
-  socket = this.socket
+  // this.socket = io();
+  // socket = this.socket
   physics = this.physics
 
   startBkgd = self.add.image(500, 400, 'space')
@@ -142,7 +142,8 @@ function addPlayer(self, playerInfo){
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
-  overlap.name = socket.id
+  console.log(overlap)
+  overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
 }
@@ -201,6 +202,9 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 }
 
 function crash(player, asteroid){
+  console.log('in crash')
+  console.log(socket)
+  console.log(this.socket)
   asteroid.destroy()
   socket.emit('destroyAsteroid', asteroid.index)
   player.disableBody(true, true);
@@ -233,7 +237,7 @@ function clearStartScreen() {
 
 function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
-  socket = this.socket;
+  socket = self.socket;
   self.socket.on('inProgress', function () {
     clearStartScreen()
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
@@ -259,7 +263,7 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
-    self.asteroids = self.physics.add.group();
+    // self.asteroids = self.physics.add.group();
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)

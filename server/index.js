@@ -14,6 +14,8 @@ app.use('/', express.static('phaser'));
 io.on('connection', function (socket) {
   const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
   var currentPlayersCount = Object.keys(players).length
+  console.log('playerCount ==> ', allowedPlayersCount)
+  console.log('currentPlayerCount ==> ', currentPlayersCount)
   if (currentPlayersCount >= allowedPlayersCount) {
     socket.emit('inProgress');
   } else {
