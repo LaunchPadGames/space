@@ -36,6 +36,8 @@ let gameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
+let timerDisplay;
+let timedEvent;
 
 let game = new Phaser.Game(config);
 
@@ -50,12 +52,17 @@ function preload (){
 
 function create (){
   let self = this;
+  self.initialTime = 300 // in seconds
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
+  scoreText = self.add.text(5, 5, 'Your Score: 0')
+  scoreTextOther = self.add.text(5, 20, 'Opponent Score: 0')
+  timerDisplay = self.add.text(500, 15, getTimerDisplay(self.initialTime))
+  timerDisplay.setOrigin(0.5)
   // this.socket = io();
   // socket = this.socket
-  physics = this.physics
+  physics = self.physics
 
   startBkgd = self.add.image(500, 400, 'space')
   title = self.add.image(500, 200, 'title')
@@ -65,11 +72,9 @@ function create (){
   startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
 
   // Lasers
-  this.laserGroup = new LaserGroup(this);
+  self.laserGroup = new LaserGroup(self);
 
-  self.cursors = this.input.keyboard.createCursorKeys();
-  scoreText = this.add.text(5, 5, 'Your Score: 0')
-  scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
+  self.cursors = self.input.keyboard.createCursorKeys();
 }
 
 function update(time) {
@@ -85,6 +90,8 @@ function update(time) {
       clearStartScreen()
       const allowedPlayersCount = selector.y === selectorYPos1 ? 1 : 2
       startSocketActions(this, allowedPlayersCount)
+      // Each 1000 ms call updateTimer
+      timedEvent = this.time.addEvent({ delay: 1000, callback: updateTimer, callbackScope: this, loop: true });
     }
   }
 
@@ -304,4 +311,22 @@ function startSocketActions(self, allowedPlayersCount) {
 function updateText() {
   scoreText.setText('Your Score: ' + score);
   scoreTextOther.setText('Opponent Score: ' + scoreOther);
+}
+
+function getTimerDisplay(time) {
+  let minutes = Math.floor(time / 60)
+  let remainingSeconds = time % 60
+  let seconds = (remainingSeconds < 10) ? '0' + remainingSeconds : remainingSeconds
+  return minutes + ':' + seconds
+}
+
+function updateTimer() {
+  this.initialTime -= 1 // One second
+  if (this.initialTime === 0) {
+    endBkgd = this.add.image(500, 400, 'space')
+    gameOverText = this.add.text(500, 400, 'Game Over'.toUpperCase(), { fontSize: '32px' })
+    gameOverText.setOrigin(0.5)
+  } else {
+    timerDisplay.setText(getTimerDisplay(this.initialTime));
+  }
 }
