@@ -139,6 +139,15 @@ function update(time) {
       rotation: this.ship.rotation
     }
   }
+
+  if(this.asteroids){
+    this.asteroids.children.entries.forEach((asteroid) => {
+      if (asteroid.x < 0) asteroid.x = canvasWidth
+      if (asteroid.x > canvasWidth) asteroid.x = 0
+      if (asteroid.y < 0) asteroid.y = canvasHeight
+      if (asteroid.y > canvasHeight) asteroid.y = 0
+    })
+  }
 }
 
 function addPlayer(self, playerInfo){
