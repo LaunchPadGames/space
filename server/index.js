@@ -33,7 +33,7 @@ io.on('connection', function (socket) {
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
     if(currentPlayersCount === allowedPlayersCount){
-      for(let i = 0; i < 1; i++){
+      for(let i = 0; i < 12; i++){
         asteroidArray.push({
           x: Math.floor(Math.random() * 800),
           y: Math.floor(Math.random() * 600),
