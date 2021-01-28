@@ -14,8 +14,9 @@ app.use('/', express.static('phaser'));
 io.on('connection', function (socket) {
   const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
   var currentPlayersCount = Object.keys(players).length
-  console.log('playerCount ==> ', allowedPlayersCount)
-  console.log('currentPlayerCount ==> ', currentPlayersCount)
+  var room = 'testRoom'
+  socket.join(room)
+  console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
   if (currentPlayersCount >= allowedPlayersCount) {
     socket.emit('inProgress');
   } else {
@@ -46,9 +47,9 @@ io.on('connection', function (socket) {
       }
       io.sockets.emit('createAsteroids', asteroidArray)
     }
-    console.log('players: ', players)
-    console.log('asteroidHash: ', asteroidHash)
-    console.log('asteroidArray: ', asteroidArray)
+    // console.log('players: ', players)
+    // console.log('asteroidHash: ', asteroidHash)
+    // console.log('asteroidArray: ', asteroidArray)
     socket.on('disconnect', function () {
       console.log('user disconnected');
       // remove this player from our players object
