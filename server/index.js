@@ -7,7 +7,6 @@ const io = require('socket.io').listen(server)
 const port = 3000
 
 app.use('/', express.static('phaser'));
-
 require('./socket')(io);
 
 db.sync()
