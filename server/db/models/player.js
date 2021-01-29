@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../db');
 
-module.exports = db.define('Player', {
+module.exports = db.define('player', {
   username: {
     type: Sequelize.STRING,
   },
@@ -15,7 +15,9 @@ module.exports = db.define('Player', {
   gameId: {
     type: Sequelize.INTEGER,
     allowNull: false,
-    references: 'games',
-    referencesKey: 'id'
+    references: {
+      model: Sequelize.Game,
+      key: 'id'
+    }
   }
 });
