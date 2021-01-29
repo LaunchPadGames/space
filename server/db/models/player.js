@@ -11,5 +11,11 @@ module.exports = db.define('Player', {
   socketId: {
     type: Sequelize.STRING,
     allowNull: false
+  },
+  gameId: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    references: 'games',
+    referencesKey: 'id'
   }
 });
