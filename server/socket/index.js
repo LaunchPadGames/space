@@ -1,3 +1,4 @@
+const { createPlayer } = require('../util');
 const players = {}
 const asteroidHash = {}
 const asteroidArray = []
@@ -6,20 +7,14 @@ module.exports = io => {
   io.on('connection', function (socket) {
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     var currentPlayersCount = Object.keys(players).length
-    var room = 'testRoom'
-    socket.join(room)
-    console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
+    // var room = 'testRoom'
+    // socket.join(room)
+    // console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
     if (currentPlayersCount >= allowedPlayersCount) {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
-      players[socket.id] = {
-        rotation: 0,
-        x: Math.floor(Math.random() * 700) + 50,
-        y: Math.floor(Math.random() * 500) + 50,
-        playerId: socket.id,
-        team: (Math.floor(Math.random() * 2) == 0) ? 'red' : 'blue'
-      };
+      players[socket.id] = createPlayer(socket);
       currentPlayersCount ++
       // send the players object to the new player
       socket.emit('currentPlayers', players);
@@ -39,7 +34,7 @@ module.exports = io => {
         }
         io.sockets.emit('createAsteroids', asteroidArray)
       }
-      // console.log('players: ', players)
+      console.log('players: ', players)
       // console.log('asteroidHash: ', asteroidHash)
       // console.log('asteroidArray: ', asteroidArray)
       socket.on('disconnect', function () {
