@@ -5,6 +5,8 @@ let asteroidHash = null
 
 module.exports = io => {
   io.on('connection', function (socket) {
+    const socketReferer = new URL(socket.handshake.headers.referer)
+    console.log('Socket referer: ', socketReferer)
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     var currentPlayersCount = Object.keys(players).length
     // var room = 'testRoom'
