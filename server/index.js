@@ -39,8 +39,8 @@ io.on('connection', function (socket) {
           y: Math.floor(Math.random() * 600),
           index: i,
           scale: Math.random() * (3 - 0.5) + 0.5,
-          xVel: Math.ceil(Math.random() * 10) * (Math.round(Math.random()) ? 1 : -1),
-          yVel: Math.ceil(Math.random() * 10) * (Math.round(Math.random()) ? 1 : -1)
+          xVel: Math.ceil(Math.random() * 50) * (Math.round(Math.random()) ? 1 : -1),
+          yVel: Math.ceil(Math.random() * 50) * (Math.round(Math.random()) ? 1 : -1)
         })
         asteroidHash[i] = true
       }
