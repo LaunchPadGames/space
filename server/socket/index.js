@@ -1,14 +1,19 @@
-const { createPlayer, createAsteroids } = require('../util');
+const { 
+  createPlayer, 
+  createAsteroids, 
+  roomTagGenerator,
+  roomTagParser
+} = require('../util');
 const players = {}
 let asteroidHash = null
 // let asteroidArray = null
 
 module.exports = io => {
   io.on('connection', function (socket) {
-    const socketReferer = new URL(socket.handshake.headers.referer)
-    console.log('Socket referer: ', socketReferer)
+    const socketReferer = roomTagParser(socket)
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     var currentPlayersCount = Object.keys(players).length
+    console.log('roomTag: ', roomTagGenerator())
     // var room = 'testRoom'
     // socket.join(room)
     // console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
@@ -27,8 +32,8 @@ module.exports = io => {
         asteroidHash = asteroidData['asteroidHash']
         io.sockets.emit('createAsteroids', asteroidData['asteroidArray'])
       }
-      console.log('players: ', players)
-      console.log('asteroidHash: ', asteroidHash)
+      // console.log('players: ', players)
+      // console.log('asteroidHash: ', asteroidHash)
       socket.on('disconnect', function () {
         console.log('user disconnected');
         // remove this player from our players object
