@@ -17,8 +17,9 @@ module.exports = io => {
     console.log('roomTag: ', roomTag)
     if(roomTag){
       socket.join(roomTag)
-      let game = Game.findOne({where: {roomTag: roomTag}})
-      Player.create({socketId: socket.id, gameId: game.id})
+      Game.findOne({where: {roomTag: roomTag}}).then((game) => {
+        Player.create({socketId: socket.id, gameId: game.id})
+      })
     } else {
       roomTag = roomTagGenerator()
       socket.join(roomTag)
