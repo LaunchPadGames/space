@@ -4,19 +4,29 @@ const {
   roomTagGenerator,
   roomTagParser
 } = require('../util');
+const { Game, Player } = require('../../models')
 const players = {}
 let asteroidHash = null
 // let asteroidArray = null
 
 module.exports = io => {
   io.on('connection', function (socket) {
-    const socketReferer = roomTagParser(socket)
+    let roomTag = roomTagParser(socket)
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     var currentPlayersCount = Object.keys(players).length
-    console.log('roomTag: ', roomTagGenerator())
-    // var room = 'testRoom'
-    // socket.join(room)
-    // console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
+    console.log('roomTag: ', roomTag)
+    if(roomTag){
+      socket.join(roomTag)
+      let game = Game.findOne({where: {roomTag: roomTag}})
+      Player.create({socketId: socket.id, gameId: game.id})
+    } else {
+      roomTag = roomTagGenerator()
+      socket.join(roomTag)
+      Game.create({roomTag: roomTag, playerLimit: allowedPlayersCount}).then((game) => {
+        Player.create({socketId: socket.id, gameId: game.id})
+      })
+    }
+    console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
     if (currentPlayersCount >= allowedPlayersCount) {
       socket.emit('inProgress');
     } else {
