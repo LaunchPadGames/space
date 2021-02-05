@@ -32,12 +32,14 @@ let lastFired = 100;
 let socket;
 let physics;
 let startScreen;
-let gameStarted = false;
+let hasJoined = false;
+let hasGameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
 let timerDisplay;
 let timedEvent;
+let isTimerRunning = false;
 
 let game = new Phaser.Game(config);
 
@@ -91,7 +93,7 @@ function create (){
 }
 
 function update(time) {
-  if (!gameStarted) {
+  if (!hasJoined) {
     if (this.cursors.up.isDown) {
       selector.y = selectorYPos1
     }
@@ -99,64 +101,62 @@ function update(time) {
       selector.y = selectorYPos2
     }
     if (this.cursors.space.isDown) {
-      gameStarted = true
+      hasJoined = true
       clearStartScreen()
       const allowedPlayersCount = selector.y === selectorYPos1 ? 1 : 2
       startSocketActions(this, allowedPlayersCount)
+    }
+  } else if (hasGameStarted) {
+    if (!isTimerRunning) {
       // Each 1000 ms call updateTimer
       timedEvent = this.time.addEvent({ delay: 1000, callback: updateTimer, callbackScope: this, loop: true });
-    }
-  }
-
-  if (this.ship) {
-    if (this.cursors.up.isDown)
-    {
-      this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
-    }
-    else if (this.cursors.down.isDown)
-    {
-      this.physics.velocityFromRotation(this.ship.rotation, -100, this.ship.body.acceleration);
-    }
-    else
-    {
-      this.ship.setAcceleration(0);
+      isTimerRunning = true
     }
 
-    if (this.cursors.left.isDown)
-    {
-      this.ship.setAngularVelocity(-300);
-    }
-    else if (this.cursors.right.isDown)
-    {
-      this.ship.setAngularVelocity(300);
-    }
-    else
-    {
-      this.ship.setAngularVelocity(0);
-    }
+    if (this.ship) {
+      if (this.cursors.up.isDown) {
+        this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
+      }
+      else if (this.cursors.down.isDown) {
+        this.physics.velocityFromRotation(this.ship.rotation, -100, this.ship.body.acceleration);
+      }
+      else {
+        this.ship.setAcceleration(0);
+      }
 
-    if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
-      this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
-      lastFired = time;
-    }
+      if (this.cursors.left.isDown) {
+        this.ship.setAngularVelocity(-300);
+      }
+      else if (this.cursors.right.isDown) {
+        this.ship.setAngularVelocity(300);
+      }
+      else {
+        this.ship.setAngularVelocity(0);
+      }
 
-    if (this.ship.x < 0) this.ship.x = canvasWidth
-    if (this.ship.x > canvasWidth) this.ship.x = 0
-    if (this.ship.y < 0) this.ship.y = canvasHeight
-    if (this.ship.y > canvasHeight) this.ship.y = 0
+      if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
+        this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
+        lastFired = time;
+      }
 
-    let x = this.ship.x
-    let y = this.ship.y
-    let r = this.ship.rotation
+      if (this.ship.x < 0) this.ship.x = canvasWidth
+      if (this.ship.x > canvasWidth) this.ship.x = 0
+      if (this.ship.y < 0) this.ship.y = canvasHeight
+      if (this.ship.y > canvasHeight) this.ship.y = 0
 
-    if( this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)){
-      this.socket.emit('playerMovement', {x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation})
-    }
+      let x = this.ship.x
+      let y = this.ship.y
+      let r = this.ship.rotation
 
-    this.ship.oldPosition = {
-      x: this.ship.x,
-      y: this.ship.y,
-      rotation: this.ship.rotation
+      if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
+        this.socket.emit('playerMovement', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation })
+      }
+
+      this.ship.oldPosition = {
+        x: this.ship.x,
+        y: this.ship.y,
+        rotation: this.ship.rotation
+      }
     }
   }
 
@@ -308,6 +308,8 @@ function startSocketActions(self, allowedPlayersCount) {
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
     })
+    // start game
+    hasGameStarted = true
   })
   self.socket.on('laserUpdate', function(laser, owner) {
     let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
