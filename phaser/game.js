@@ -36,6 +36,10 @@ let gameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
+let rateOfFire = 200;
+let scene = null;
+let spray = false;
+const angles = [-0.4, -0.2, 0.2, 0.4]
 
 let game = new Phaser.Game(config);
 
@@ -46,10 +50,16 @@ function preload (){
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
   this.load.image('laserGreen', 'assets/laserGreenR.png')
   this.load.image('laserBlue', 'assets/laserBlueR.png')
+  this.load.image('shield1', 'assets/shield1.png')
+  this.load.image('shield2', 'assets/shield2.png')
+  this.load.image('shield_powerup', 'assets/shield_gold.png')
+  this.load.image('gold_powerup', 'assets/bolt_gold.png')
+  this.load.image('silver_powerup', 'assets/bolt_silver.png')
 }
 
 function create (){
   let self = this;
+  scene = this;
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
@@ -115,7 +125,7 @@ function update(time) {
       this.ship.setAngularVelocity(0);
     }
 
-    if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
+    if (this.cursors.space.isDown && time > lastFired + rateOfFire && this.ship.body.enable) {
       this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
       lastFired = time;
     }
@@ -185,6 +195,12 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
     const laser = this.getFirstDead(true, x, y, 'laserGreen');
     if (laser) {
       laser.fire(x, y, r);
+      if (spray) {
+        for(let i = 0; i <= 4; i++) {
+          const laser = this.getFirstDead(true, x, y, 'laserGreen');
+          laser.fire(x, y, r + angles[i]);
+        }
+      }
     }
   }
 }
@@ -245,7 +261,32 @@ function destroyAsteroid(laser, asteroid) {
   } else {
     scoreOther += 10;
   }
+  if (Phaser.Math.Between(0, 100) > 90) {
+    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
+    physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
+  }
+
+  if (Phaser.Math.Between(0, 100) > 90) {
+    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
+    physics.add.overlap(scene.ship, powerup, sprayPowerup);
+  }
   updateText();
+}
+
+function rateOfFirePowerup(ship, powerup) {
+  rateOfFire -= 50;
+  setTimeout(function() {
+    rateOfFire += 50;
+  }, 20000)
+  powerup.destroy();
+}
+
+function sprayPowerup(ship, powerup) {
+  spray = true;
+  setTimeout(function() {
+    spray = false;
+  }, 10000)
+  powerup.destroy();
 }
 
 function clearStartScreen() {
