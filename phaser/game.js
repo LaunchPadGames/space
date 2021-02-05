@@ -58,8 +58,21 @@ function create (){
   self.otherPlayers = {}
   scoreText = self.add.text(5, 5, 'Your Score: 0')
   scoreTextOther = self.add.text(5, 20, 'Opponent Score: 0')
+
+  // Timer
   timerDisplay = self.add.text(500, 15, getTimerDisplay(self.initialTime))
   timerDisplay.setOrigin(0.5)
+
+  self.hiddenTimeStamp = 0;
+  game.events.on('hidden', () => {
+    self.hiddenTimeStamp = performance.now();
+  });
+
+  game.events.on('visible', () => {
+    let elapsedTime = Math.floor((performance.now() - self.hiddenTimeStamp)/1000); //seconds
+    self.initialTime -= elapsedTime;
+  })
+
   // this.socket = io();
   // socket = this.socket
   physics = self.physics
