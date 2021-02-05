@@ -346,7 +346,7 @@ function getTimerDisplay(time) {
 
 function updateTimer() {
   this.initialTime -= 1 // One second
-  if (this.initialTime === 0) {
+  if (this.initialTime <= 0) {
     endBkgd = this.add.image(500, 400, 'space')
     gameOverText = this.add.text(500, 400, 'Game Over'.toUpperCase(), { fontSize: '32px' })
     gameOverText.setOrigin(0.5)
