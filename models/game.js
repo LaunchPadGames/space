@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   Game.init({
     roomTag: DataTypes.STRING,
-    gameType: DataTypes.INTEGER
+    playerLimit: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Game',
