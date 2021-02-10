@@ -46,7 +46,7 @@ module.exports = io => {
         const asteroidData = createAsteroids()
         asteroidHash = asteroidData['asteroidHash']
         console.log('room: ', room)
-        socket.to(room).broadcast.emit('createAsteroids', asteroidData['asteroidArray'])
+        io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
       // console.log('players: ', players)
       // console.log('asteroidHash: ', asteroidHash)
@@ -55,7 +55,7 @@ module.exports = io => {
         // remove this player from our players object
         delete players[socket.id];
         // emit a message to all players to remove this player
-        io.to(room).emit('disconnect', socket.id);
+        io.sockets.in(room).emit('disconnect', socket.id);
       });
       socket.on('playerMovement', function(movementData){
         players[socket.id].x = movementData.x
