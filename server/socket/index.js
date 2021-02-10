@@ -11,10 +11,9 @@ let asteroidHash = null
 // let asteroidArray = null
 
 module.exports = io => {
-  io.on('connection', function (socket) {
+  io.on('connection', async function (socket) {
     let roomTag = roomTagParser(socket)
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-    var currentPlayersCount = Object.keys(players).length
     console.log('roomTag: ', roomTag)
     if(roomTag){
       socket.join(roomTag)
@@ -28,6 +27,8 @@ module.exports = io => {
         Player.create({socketId: socket.id, gameId: game.id})
       })
     }
+
+    var currentPlayersCount = Object.keys(players[roomTag]).length
     console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
     console.log(': ', Object.keys(socket.adapter.rooms)[1])
     if (currentPlayersCount >= allowedPlayersCount) {
@@ -35,7 +36,7 @@ module.exports = io => {
     } else {
       console.log('a user connected');
       players[socket.id] = createPlayer(socket);
-      currentPlayersCount ++
+      // currentPlayersCount ++
       const room = currentRoom(socket)
       // send the players object to the new player
       console.log('players: ', players)
