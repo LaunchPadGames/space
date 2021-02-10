@@ -14,7 +14,7 @@ module.exports = io => {
   io.on('connection', async function (socket) {
     const roomTag = roomTagParser(socket) || roomTagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-    console.log('roomTag: ', roomTag)
+    // console.log('roomTag: ', roomTag)
     let games = await Game.findOrCreate({
       where: { roomTag: roomTag}, // we search for this user
       defaults: { roomTag: roomTag, playerLimit: allowedPlayersCount} // if it doesn't exist, we create it with this additional data
@@ -27,7 +27,6 @@ module.exports = io => {
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
 
-    // console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
     // console.log('room: ', Object.keys(socket.adapter.rooms)[1])
     let currentPlayersCount = await Player.count({
       where: { gameId: game.dataValues.id }
@@ -39,8 +38,10 @@ module.exports = io => {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
-      const room = currentRoom(socket)
-      console.log('players before: ', players)
+      const room = currentRoom(io, socket)
+      console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id])[1])
+      // console.log('room: ', room)
+      // console.log('players before: ', players)
       players[room][socket.id] = createPlayer(socket);
       // send the players object to the new player
       console.log('players after: ', players)
@@ -50,7 +51,6 @@ module.exports = io => {
       if(currentPlayersCount === playerLimit){
         const asteroidData = createAsteroids()
         asteroidHash[room] = asteroidData['asteroidHash']
-        console.log('room: ', room)
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
       // console.log('players: ', players)
