@@ -20,8 +20,10 @@ module.exports = io => {
       defaults: { roomTag: roomTag, playerLimit: allowedPlayersCount} // if it doesn't exist, we create it with this additional data
     });
     let game = games[0]
-    console.log('Game: ', game)
-    players[roomTag] = {}
+    // console.log('Game: ', game)
+    if(!players[roomTag]){
+      players[roomTag] = {}
+    } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
 
@@ -31,16 +33,17 @@ module.exports = io => {
       where: { gameId: game.dataValues.id }
     })
     const playerLimit = game.dataValues.playerLimit
-    console.log('playerLimit: ', playerLimit)
-    console.log('currentPlayersCount: ', currentPlayersCount)
+    // console.log('playerLimit: ', playerLimit)
+    // console.log('currentPlayersCount: ', currentPlayersCount)
     if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
       const room = currentRoom(socket)
+      console.log('players before: ', players)
       players[room][socket.id] = createPlayer(socket);
       // send the players object to the new player
-      console.log('players: ', players)
+      console.log('players after: ', players)
       socket.emit('currentPlayers', players[room]);
       // update all other players of the new player
       socket.to(room).broadcast.emit('newPlayer', players[room][socket.id]);
