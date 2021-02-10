@@ -260,6 +260,7 @@ function startSocketActions(self, allowedPlayersCount) {
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
   })
   self.socket.on('currentPlayers', function (players) {
+    debugger
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
         addPlayer(self, players[id]);
@@ -281,6 +282,7 @@ function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
     // self.asteroids = self.physics.add.group();
+    console.log('asteroidArray: ', asteroidArray)
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)
