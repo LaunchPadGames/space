@@ -14,37 +14,29 @@ module.exports = io => {
   io.on('connection', async function (socket) {
     const roomTag = roomTagParser(socket) || roomTagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-    // console.log('roomTag: ', roomTag)
     let games = await Game.findOrCreate({
       where: { roomTag: roomTag}, // we search for this user
       defaults: { roomTag: roomTag, playerLimit: allowedPlayersCount} // if it doesn't exist, we create it with this additional data
     });
     let game = games[0]
-    // console.log('Game: ', game)
     if(!players[roomTag]){
       players[roomTag] = {}
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
 
-    // console.log('room: ', Object.keys(socket.adapter.rooms)[1])
     let currentPlayersCount = await Player.count({
       where: { gameId: game.dataValues.id }
     })
     const playerLimit = game.dataValues.playerLimit
-    // console.log('playerLimit: ', playerLimit)
-    // console.log('currentPlayersCount: ', currentPlayersCount)
     if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
       const room = currentRoom(io, socket)
-      console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id])[1])
-      // console.log('room: ', room)
-      // console.log('players before: ', players)
       players[room][socket.id] = createPlayer(socket);
       // send the players object to the new player
-      console.log('players after: ', players)
+      console.log('players: ', players)
       socket.emit('currentPlayers', players[room]);
       // update all other players of the new player
       socket.to(room).broadcast.emit('newPlayer', players[room][socket.id]);
@@ -53,8 +45,6 @@ module.exports = io => {
         asteroidHash[room] = asteroidData['asteroidHash']
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
-      // console.log('players: ', players)
-      // console.log('asteroidHash: ', asteroidHash)
       socket.on('disconnect', function () {
         console.log('user disconnected');
         // remove this player from our players object
