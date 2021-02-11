@@ -3,8 +3,11 @@ const {
   createAsteroids, 
   roomTagGenerator,
   roomTagParser,
-  currentRoom
+  currentRoom,
+  redisSetter,
+  redisGetter
 } = require('../util');
+const { redisClient } = require('../redis')
 const { Game, Player } = require('../../models')
 const players = {}
 let asteroidHash = {}
@@ -12,6 +15,10 @@ let asteroidHash = {}
 
 module.exports = io => {
   io.on('connection', async function (socket) {
+    redisSetter('a', {'g': 23})
+    redisSetter('b', 90)
+    console.log('a: ', await redisGetter('a'))
+    console.log('b: ', await redisGetter('c'))
     const roomTag = roomTagParser(socket) || roomTagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     let games = await Game.findOrCreate({
