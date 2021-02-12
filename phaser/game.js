@@ -281,6 +281,7 @@ function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
     // self.asteroids = self.physics.add.group();
+    console.log('asteroidArray: ', asteroidArray)
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)

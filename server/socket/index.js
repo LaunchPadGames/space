@@ -2,78 +2,90 @@ const {
   createPlayer, 
   createAsteroids, 
   roomTagGenerator,
-  roomTagParser
+  roomTagParser,
+  currentRoom,
+  redisSetter,
+  redisGetter
 } = require('../util');
 const { Game, Player } = require('../../models')
-const players = {}
-let asteroidHash = null
-// let asteroidArray = null
 
 module.exports = io => {
-  io.on('connection', function (socket) {
-    let roomTag = roomTagParser(socket)
+  io.on('connection', async function (socket) {
+    const roomTag = roomTagParser(socket) || roomTagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-    var currentPlayersCount = Object.keys(players).length
-    console.log('roomTag: ', roomTag)
-    if(roomTag){
-      socket.join(roomTag)
-      Game.findOne({where: {roomTag: roomTag}}).then((game) => {
-        Player.create({socketId: socket.id, gameId: game.id})
-      })
-    } else {
-      roomTag = roomTagGenerator()
-      socket.join(roomTag)
-      Game.create({roomTag: roomTag, playerLimit: allowedPlayersCount}).then((game) => {
-        Player.create({socketId: socket.id, gameId: game.id})
-      })
-    }
-    console.log(`Rooms for Socket ID ${socket.id}`, Object.keys(io.sockets.adapter.sids[socket.id]))
-    if (currentPlayersCount >= allowedPlayersCount) {
+    let games = await Game.findOrCreate({
+      where: { roomTag: roomTag},
+      defaults: { roomTag: roomTag, playerLimit: allowedPlayersCount}
+    });
+    let game = games[0]
+    if(!(await redisGetter(roomTag)) ){
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}})
+    } 
+    await Player.create({socketId: socket.id, gameId: game.dataValues.id})
+    socket.join(roomTag)
+
+    let currentPlayersCount = await Player.count({
+      where: { gameId: game.dataValues.id }
+    })
+    const playerLimit = game.dataValues.playerLimit
+    if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
-      players[socket.id] = createPlayer(socket);
-      currentPlayersCount ++
+      const room = currentRoom(io, socket)
+      let redisGame = await redisGetter(room)
+      redisGame['players'][socket.id] = createPlayer(socket)
+      await redisSetter(room, redisGame)
+      
       // send the players object to the new player
-      socket.emit('currentPlayers', players);
+      socket.emit('currentPlayers', redisGame['players']);
+
       // update all other players of the new player
-      socket.broadcast.emit('newPlayer', players[socket.id]);
-      if(currentPlayersCount === allowedPlayersCount){
+      socket.to(room).broadcast.emit('newPlayer', redisGame['players'][socket.id]);
+      if(currentPlayersCount === playerLimit){
         const asteroidData = createAsteroids()
-        asteroidHash = asteroidData['asteroidHash']
-        io.sockets.emit('createAsteroids', asteroidData['asteroidArray'])
+        redisGame = await redisGetter(room)
+        redisGame['asteroids'] = asteroidData['asteroidHash']
+        redisSetter(room, redisGame)
+        io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
-      // console.log('players: ', players)
-      // console.log('asteroidHash: ', asteroidHash)
-      socket.on('disconnect', function () {
+      socket.on('disconnect', async function () {
         console.log('user disconnected');
         // remove this player from our players object
-        delete players[socket.id];
+        redisGame = await redisGetter(room)
+        delete redisGame['players'][socket.id]
+        redisSetter(room, redisGame)
+        // delete players[room][socket.id];
         // emit a message to all players to remove this player
-        io.emit('disconnect', socket.id);
+        io.sockets.in(room).emit('disconnect', socket.id);
       });
-      socket.on('playerMovement', function(movementData){
-        players[socket.id].x = movementData.x
-        players[socket.id].y = movementData.y
-        players[socket.id].rotation = movementData.rotation
-        socket.broadcast.emit('playerMoved', players[socket.id])
+      socket.on('playerMovement', async function(movementData){
+        redisGame = await redisGetter(room)
+        redisGame['players'][socket.id].x = movementData.x
+        redisGame['players'][socket.id].y = movementData.y
+        redisGame['players'][socket.id].rotation = movementData.rotation
+        redisSetter(room, redisGame)
+        socket.to(room).broadcast.emit('playerMoved', redisGame['players'][socket.id])
       })
 
-      socket.on('laserShot', function(data) {
-        if (players[socket.id] == null) return;
+      socket.on('laserShot', async function(data) {
+        redisGame = await redisGetter(room)
+        if (redisGame['players'][socket.id] == null) return;
         let laser = data;
         data.owner_id = socket.id;
-        socket.broadcast.emit('laserUpdate', laser, socket.id)
+        socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
-      socket.on('destroyAsteroid', function(asteroidIndex){
-        asteroidHash[asteroidIndex] = false
-        socket.broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+      socket.on('destroyAsteroid', async function(asteroidIndex){
+        redisGame = await redisGetter(room)
+        redisGame['asteroids'][asteroidIndex] = false
+        redisSetter(room, redisGame)
+        socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
       });
       socket.on('disablePlayer', function(socketId){
-        socket.broadcast.emit('disableOtherPlayer', socketId)
+        socket.to(room).broadcast.emit('disableOtherPlayer', socketId)
       })
       socket.on('enablePlayer', function(socketId){
-        socket.broadcast.emit('enableOtherPlayer', socketId)
+        socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
       })
     }
   })
