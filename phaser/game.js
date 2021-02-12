@@ -260,7 +260,6 @@ function startSocketActions(self, allowedPlayersCount) {
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
   })
   self.socket.on('currentPlayers', function (players) {
-    debugger
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
         addPlayer(self, players[id]);
