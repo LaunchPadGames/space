@@ -39,6 +39,7 @@ let selectorYPos2 = 653;
 let rateOfFire = 200;
 let scene = null;
 let spray = false;
+let shield_level = 0;
 const angles = [-0.4, -0.2, 0.2, 0.4]
 
 let game = new Phaser.Game(config);
@@ -55,6 +56,8 @@ function preload (){
   this.load.image('shield_powerup', 'assets/shield_gold.png')
   this.load.image('gold_powerup', 'assets/bolt_gold.png')
   this.load.image('silver_powerup', 'assets/bolt_silver.png')
+  this.load.image('ship_shield1', 'assets/ship_shield1.png')
+  this.load.image('ship_shield2', 'assets/ship_shield2.png')
 }
 
 function create (){
@@ -62,6 +65,7 @@ function create (){
   scene = this;
   self.asteroidArray = []
   self.ship = null
+  self.shipContainer = null
   self.otherPlayers = {}
   // this.socket = io();
   // socket = this.socket
@@ -228,14 +232,21 @@ function crash(player, asteroid){
   console.log(this.socket)
   asteroid.destroy()
   socket.emit('destroyAsteroid', asteroid.index)
-  player.disableBody(true, true);
-  socket.emit('disablePlayer', socket.id)
-  resetPlayer(player)
+  if (shield_level === 0) {
+    player.disableBody(true, true);
+    socket.emit('disablePlayer', socket.id)
+    resetPlayer(player)
+  } else {
+    shield_level -= 1;
+    let texture = shield_level === 0 ? 'ship' : 'ship_shield2'
+    player.setTexture(texture)
+  }
 }
 
 function resetPlayer(player) {
   setTimeout(() => {
     player.enableBody(true, player.body.x, player.body.y, true, true)
+    player.setTexture('ship')
     socket.emit('enablePlayer', socket.id)
     pauseCollider(player)
   }, 500)
@@ -270,6 +281,11 @@ function destroyAsteroid(laser, asteroid) {
     const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
     physics.add.overlap(scene.ship, powerup, sprayPowerup);
   }
+
+  if (Phaser.Math.Between(0, 100) > 90) {
+    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+    physics.add.overlap(scene.ship, powerup, shieldPowerup);
+  }
   updateText();
 }
 
@@ -286,6 +302,12 @@ function sprayPowerup(ship, powerup) {
   setTimeout(function() {
     spray = false;
   }, 10000)
+  powerup.destroy();
+}
+
+function shieldPowerup(ship, powerup) {
+  shield_level = 2;
+  ship.setTexture('ship_shield1')
   powerup.destroy();
 }
 
