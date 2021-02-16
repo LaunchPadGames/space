@@ -1,4 +1,3 @@
-import axios from 'axios'
 let canvasWidth = 1000;
 let canvasHeight = 800;
 
@@ -173,6 +172,7 @@ function update(time) {
 
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  ship.primary = playerInfo.primary
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
@@ -357,5 +357,8 @@ function getTimerDisplay(time) {
 }
 
 function getTime() {
-  this.socket.emit('getTime')
+  console.log('ship: ', this.ship)
+  if(this.ship.primary){
+    this.socket.emit('getTime')
+  }
 }

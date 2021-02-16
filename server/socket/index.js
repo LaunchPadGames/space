@@ -34,7 +34,8 @@ module.exports = io => {
       console.log('a user connected');
       const room = currentRoom(io, socket)
       let redisGame = await redisGetter(room)
-      redisGame['players'][socket.id] = createPlayer(socket)
+      redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
+      console.log('player: ', redisGame['players'])
       await redisSetter(room, redisGame)
       
       // send the players object to the new player
@@ -89,8 +90,9 @@ module.exports = io => {
       })
       socket.on('getTime', async function(socketId){
         redisGame = await redisGetter(room)
-        let time = redisGame['time'] - 1
-        
+        redisGame['time'] = redisGame['time'] - 1
+        redisSetter(room, redisGame)
+        io.sockets.in(room).emit('updateTimer', redisGame['time']);
       })
     }
   })
