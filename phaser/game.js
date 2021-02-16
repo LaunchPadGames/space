@@ -1,3 +1,4 @@
+import axios from 'axios'
 let canvasWidth = 1000;
 let canvasHeight = 800;
 
@@ -54,7 +55,6 @@ function preload (){
 
 function create (){
   let self = this;
-  self.initialTime = 300 // in seconds
   self.asteroidArray = []
   self.ship = null
   self.otherPlayers = {}
@@ -62,7 +62,7 @@ function create (){
   scoreTextOther = self.add.text(5, 20, 'Opponent Score: 0')
 
   // Timer
-  timerDisplay = self.add.text(500, 15, getTimerDisplay(self.initialTime))
+  timerDisplay = self.add.text(500, 15, getTimerDisplay(0))
   timerDisplay.setOrigin(0.5)
 
   self.hiddenTimeStamp = 0;
@@ -107,9 +107,10 @@ function update(time) {
       startSocketActions(this, allowedPlayersCount)
     }
   } else if (hasGameStarted) {
+    // API request
     if (!isTimerRunning) {
       // Each 1000 ms call updateTimer
-      timedEvent = this.time.addEvent({ delay: 1000, callback: updateTimer, callbackScope: this, loop: true });
+      timedEvent = this.time.addEvent({ delay: 1000, callback: getTime, callbackScope: this, loop: true });
       isTimerRunning = true
     }
 
@@ -331,6 +332,16 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
+
+  self.socket.on('updateTimer', function(time){
+    if (time <= 0) {
+      endBkgd = this.add.image(500, 400, 'space')
+      gameOverText = this.add.text(500, 400, 'Game Over'.toUpperCase(), { fontSize: '32px' })
+      gameOverText.setOrigin(0.5)
+    } else {
+      timerDisplay.setText(getTimerDisplay(time));
+    }
+  })
 }
 
 function updateText() {
@@ -345,13 +356,6 @@ function getTimerDisplay(time) {
   return minutes + ':' + seconds
 }
 
-function updateTimer() {
-  this.initialTime -= 1 // One second
-  if (this.initialTime <= 0) {
-    endBkgd = this.add.image(500, 400, 'space')
-    gameOverText = this.add.text(500, 400, 'Game Over'.toUpperCase(), { fontSize: '32px' })
-    gameOverText.setOrigin(0.5)
-  } else {
-    timerDisplay.setText(getTimerDisplay(this.initialTime));
-  }
+function getTime() {
+  this.socket.emit('getTime')
 }

@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -86,6 +86,11 @@ module.exports = io => {
       })
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
+      })
+      socket.on('getTime', async function(socketId){
+        redisGame = await redisGetter(room)
+        let time = redisGame['time'] - 1
+        
       })
     }
   })
