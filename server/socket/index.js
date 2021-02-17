@@ -8,6 +8,7 @@ const {
   redisGetter
 } = require('../util');
 const { Game, Player } = require('../../models')
+const pry = require('pryjs')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
@@ -75,11 +76,15 @@ module.exports = io => {
         data.owner_id = socket.id;
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
-      socket.on('destroyAsteroid', async function(asteroidIndex){
+      socket.on('destroyAsteroid', async function(asteroidIndex, laser){
         redisGame = await redisGetter(room)
-        redisGame['asteroids'][asteroidIndex] = false
+        if(laser && redisGame['asteroids'][asteroidIndex]){
+          redisGame['asteroids'][asteroidIndex] = false
+          redisGame['players'][socket.id]['score'] += 10
+        }
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+        io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})
       });
       socket.on('disablePlayer', function(socketId){
         socket.to(room).broadcast.emit('disableOtherPlayer', socketId)
