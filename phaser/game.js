@@ -286,6 +286,17 @@ function destroyAsteroid(laser, asteroid) {
     const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
     physics.add.overlap(scene.ship, powerup, shieldPowerup);
   }
+
+  // if (Phaser.Math.Between(0, 100) > 90) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
+  // } else if (Phaser.Math.Between(0, 100) > 90) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
+  // } else if (Phaser.Math.Between(0, 100) > 95) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
+  // }
   updateText();
 }
 
