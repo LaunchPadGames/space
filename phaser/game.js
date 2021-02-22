@@ -240,7 +240,9 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
-  socket.emit('destroyAsteroid', asteroid.index, true)
+  if (laser.texture.key === 'laserGreen') {
+    socket.emit('destroyAsteroid', asteroid.index, true)
+  }
   laser.destroy()
 }
 
@@ -305,8 +307,8 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
-  self.socket.on('updateScore', function(socketId, score){
-    if(socketId === this.ship.playerId){
+  self.socket.on('updateScore', function({socketId, score}){
+    if(socketId === self.ship.playerId){
       scoreText.setText('Your Score: ' + score);
     } else {
       scoreTextOther.setText('Opponent Score: ' + score);

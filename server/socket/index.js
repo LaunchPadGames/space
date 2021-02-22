@@ -8,7 +8,6 @@ const {
   redisGetter
 } = require('../util');
 const { Game, Player } = require('../../models')
-const pry = require('pryjs')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
