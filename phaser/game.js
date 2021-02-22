@@ -306,7 +306,7 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
   self.socket.on('updateScore', function(socketId, score){
-    if(socketId === this.socket.id){
+    if(socketId === this.ship.playerId){
       scoreText.setText('Your Score: ' + score);
     } else {
       scoreTextOther.setText('Opponent Score: ' + score);
