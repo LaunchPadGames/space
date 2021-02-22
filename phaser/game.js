@@ -142,6 +142,7 @@ function update(time) {
 
   if(this.asteroids){
     this.asteroids.children.entries.forEach((asteroid) => {
+      console.log('asteroid: ', asteroid)
       if (asteroid.x < 0) asteroid.x = canvasWidth
       if (asteroid.x > canvasWidth) asteroid.x = 0
       if (asteroid.y < 0) asteroid.y = canvasHeight
@@ -240,6 +241,7 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
+  console.log('asteroids: ', this.asteroids)
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', asteroid.index, true)
   }

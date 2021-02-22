@@ -76,11 +76,13 @@ module.exports = io => {
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
       socket.on('destroyAsteroid', async function(asteroidIndex, laser){
+
         redisGame = await redisGetter(room)
         if(laser && redisGame['asteroids'][asteroidIndex]){
-          redisGame['asteroids'][asteroidIndex] = false
           redisGame['players'][socket.id]['score'] += 10
         }
+          redisGame['asteroids'][asteroidIndex] = false
+          console.log('asteroids: ', redisGame['asteroids'])
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
         io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})
