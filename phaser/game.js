@@ -41,6 +41,7 @@ let scene = null;
 let spray = false;
 let shield_level = 0;
 const angles = [-0.4, -0.2, 0.2, 0.4]
+let speed = 100
 
 let game = new Phaser.Game(config);
 
@@ -48,12 +49,25 @@ function preload (){
   this.load.image('space', 'assets/start_bkgd.jpg')
   this.load.image('title', 'assets/start_title.png')
   this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
+  this.load.image('asteroid0','assets/asteroid12.png')
+  this.load.image('asteroid1','assets/asteroid1.png')
+  this.load.image('asteroid2','assets/asteroid2.png')
+  this.load.image('asteroid3','assets/asteroid3.png')
+  this.load.image('asteroid4','assets/asteroid4.png')
+  this.load.image('asteroid5','assets/asteroid5.png')
+  this.load.image('asteroid6','assets/asteroid6.png')
+  this.load.image('asteroid7','assets/asteroid7.png')
+  this.load.image('asteroid8','assets/asteroid8.png')
+  this.load.image('asteroid9','assets/asteroid9.png')
+  this.load.image('asteroid10','assets/asteroid10.png')
+  this.load.image('asteroid11','assets/asteroid11.png')
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
   this.load.image('laserGreen', 'assets/laserGreenR.png')
   this.load.image('laserBlue', 'assets/laserBlueR.png')
   this.load.image('shield1', 'assets/shield1.png')
   this.load.image('shield2', 'assets/shield2.png')
   this.load.image('shield_powerup', 'assets/shield_gold.png')
+  this.load.image('star_powerup', 'assets/star_gold.png')
   this.load.image('gold_powerup', 'assets/bolt_gold.png')
   this.load.image('silver_powerup', 'assets/bolt_silver.png')
   this.load.image('ship_shield1', 'assets/ship_shield1.png')
@@ -105,11 +119,11 @@ function update(time) {
   if (this.ship) {
     if (this.cursors.up.isDown)
     {
-      this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
+      this.physics.velocityFromRotation(this.ship.rotation, speed, this.ship.body.acceleration);
     }
     else if (this.cursors.down.isDown)
     {
-      this.physics.velocityFromRotation(this.ship.rotation, -100, this.ship.body.acceleration);
+      this.physics.velocityFromRotation(this.ship.rotation, speed * -1, this.ship.body.acceleration);
     }
     else
     {
@@ -118,11 +132,11 @@ function update(time) {
 
     if (this.cursors.left.isDown)
     {
-      this.ship.setAngularVelocity(-300);
+      this.ship.setAngularVelocity(-350);
     }
     else if (this.cursors.right.isDown)
     {
-      this.ship.setAngularVelocity(300);
+      this.ship.setAngularVelocity(350);
     }
     else
     {
@@ -176,6 +190,7 @@ function addPlayer(self, playerInfo){
 }
 
 function addOtherPlayers(self, playerInfo){
+  return
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
@@ -272,19 +287,24 @@ function destroyAsteroid(laser, asteroid) {
   } else {
     scoreOther += 10;
   }
-  if (Phaser.Math.Between(0, 100) > 90) {
-    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
-    physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
-  }
+  // if (Phaser.Math.Between(0, 100) > 90) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
+  // }
+  //
+  // if (Phaser.Math.Between(0, 100) > 90) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
+  // }
+  //
+  // if (Phaser.Math.Between(0, 100) > 90) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
+  // }
 
   if (Phaser.Math.Between(0, 100) > 90) {
-    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
-    physics.add.overlap(scene.ship, powerup, sprayPowerup);
-  }
-
-  if (Phaser.Math.Between(0, 100) > 90) {
-    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
-    physics.add.overlap(scene.ship, powerup, shieldPowerup);
+    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
+    physics.add.overlap(scene.ship, powerup, speedPowerup);
   }
 
   // if (Phaser.Math.Between(0, 100) > 90) {
@@ -301,9 +321,9 @@ function destroyAsteroid(laser, asteroid) {
 }
 
 function rateOfFirePowerup(ship, powerup) {
-  rateOfFire -= 50;
+  rateOfFire -= 70;
   setTimeout(function() {
-    rateOfFire += 50;
+    rateOfFire += 70;
   }, 20000)
   powerup.destroy();
 }
@@ -319,6 +339,14 @@ function sprayPowerup(ship, powerup) {
 function shieldPowerup(ship, powerup) {
   shield_level = 2;
   ship.setTexture('ship_shield1')
+  powerup.destroy();
+}
+
+function speedPowerup(ship, powerup) {
+  speed += 600
+  setTimeout(function() {
+    speed -= 600
+  }, 10000)
   powerup.destroy();
 }
 
@@ -357,8 +385,8 @@ function startSocketActions(self, allowedPlayersCount) {
     // self.asteroids = self.physics.add.group();
     console.log('asteroidArray: ', asteroidArray)
     asteroidArray.forEach((asteroid) => {
-      let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
-      phaserAsteroid.setScale(asteroid.scale)
+      let phaserAsteroid = self.asteroids.create(500, 500, `asteroid${asteroid.scale}`)
+      phaserAsteroid.setScale(1.5)
       phaserAsteroid.index = asteroid.index
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
