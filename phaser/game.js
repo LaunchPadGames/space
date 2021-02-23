@@ -322,12 +322,13 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
-  self.socket.on('updateScore', function({socketId, score}){
-    if(socketId === self.ship.playerId){
-      scoreText.setText('Your Score: ' + score);
+  self.socket.on('updateScore', function({socketId, score: newScore}){
+    if (socketId === self.ship.playerId) {
+      score = newScore
     } else {
-      scoreTextOther.setText('Opponent Score: ' + score);
+      scoreOther = newScore
     }
+    updateScoreText()
   })
   self.socket.on('updateTimer', function(time){
     if (time <= 0) {
@@ -357,6 +358,11 @@ function endGame(self) {
   scoreText.setPosition(500, 400)
   scoreTextOther.setOrigin(0.5)
   scoreTextOther.setPosition(500, 420)
+}
+
+function updateScoreText() {
+  scoreText.setText('Your Score: ' + score);
+  scoreTextOther.setText('Opponent Score: ' + scoreOther);
 }
 
 function getTimerDisplay(time) {
