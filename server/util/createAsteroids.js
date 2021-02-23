@@ -6,7 +6,7 @@ module.exports = function() {
       x: Math.floor(Math.random() * 800),
       y: Math.floor(Math.random() * 600),
       index: i,
-      scale: Math.random() * (3 - 0.5) + 0.5,
+      scale: Math.floor(Math.random() * Math.floor(12)),
       xVel: Math.ceil(Math.random() * 50) * (Math.round(Math.random()) ? 1 : -1),
       yVel: Math.ceil(Math.random() * 50) * (Math.round(Math.random()) ? 1 : -1)
     })
