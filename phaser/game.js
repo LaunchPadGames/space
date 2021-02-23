@@ -104,9 +104,8 @@ function update(time) {
       startSocketActions(this, allowedPlayersCount)
     }
   } else if (hasGameStarted) {
-    // API request
     if (!isTimerRunning) {
-      // Each 1000 ms call updateTimer
+      // Each 1000 ms call getTime
       timedEvent = this.time.addEvent({ delay: 1000, callback: getTime, callbackScope: this, loop: true });
       isTimerRunning = true
     }
