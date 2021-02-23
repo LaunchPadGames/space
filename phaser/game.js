@@ -160,6 +160,7 @@ function update(time) {
 
   if(this.asteroids){
     this.asteroids.children.entries.forEach((asteroid) => {
+      console.log('asteroid: ', asteroid)
       if (asteroid.x < 0) asteroid.x = canvasWidth
       if (asteroid.x > canvasWidth) asteroid.x = 0
       if (asteroid.y < 0) asteroid.y = canvasHeight
@@ -171,6 +172,7 @@ function update(time) {
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.primary = playerInfo.primary
+  ship.playerId = playerInfo.playerId
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
@@ -230,7 +232,7 @@ function crash(player, asteroid){
   console.log(socket)
   console.log(this.socket)
   asteroid.destroy()
-  socket.emit('destroyAsteroid', asteroid.index)
+  socket.emit('destroyAsteroid', asteroid.index, false)
   player.disableBody(true, true);
   socket.emit('disablePlayer', socket.id)
   resetPlayer(player)
@@ -258,13 +260,11 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
-  laser.destroy();
+  console.log('asteroids: ', this.asteroids)
   if (laser.texture.key === 'laserGreen') {
-    score += 10;
-  } else {
-    scoreOther += 10;
+    socket.emit('destroyAsteroid', asteroid.index, true)
   }
-  updateText();
+  laser.destroy()
 }
 
 function clearStartScreen() {
@@ -330,7 +330,13 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
-
+  self.socket.on('updateScore', function({socketId, score}){
+    if(socketId === self.ship.playerId){
+      scoreText.setText('Your Score: ' + score);
+    } else {
+      scoreTextOther.setText('Opponent Score: ' + score);
+    }
+  })
   self.socket.on('updateTimer', function(time){
     if (time <= 0) {
       endGame(self)
@@ -359,11 +365,6 @@ function endGame(self) {
   scoreText.setPosition(500, 400)
   scoreTextOther.setOrigin(0.5)
   scoreTextOther.setPosition(500, 420)
-}
-
-function updateText() {
-  scoreText.setText('Your Score: ' + score);
-  scoreTextOther.setText('Opponent Score: ' + scoreOther);
 }
 
 function getTimerDisplay(time) {

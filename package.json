@@ -23,6 +23,7 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "pryjs": "^1.0.3",
     "sequelize-cli": "^6.2.0"
   }
 }
