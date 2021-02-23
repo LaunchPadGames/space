@@ -83,7 +83,6 @@ module.exports = io => {
           redisGame['players'][socket.id]['score'] += 10
         }
           redisGame['asteroids'][asteroidIndex] = false
-          console.log('asteroids: ', redisGame['asteroids'])
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
         io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})

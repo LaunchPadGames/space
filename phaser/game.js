@@ -160,7 +160,6 @@ function update(time) {
 
   if(this.asteroids){
     this.asteroids.children.entries.forEach((asteroid) => {
-      console.log('asteroid: ', asteroid)
       if (asteroid.x < 0) asteroid.x = canvasWidth
       if (asteroid.x > canvasWidth) asteroid.x = 0
       if (asteroid.y < 0) asteroid.y = canvasHeight
@@ -176,7 +175,6 @@ function addPlayer(self, playerInfo){
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
-  console.log(overlap)
   overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
@@ -228,9 +226,6 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 }
 
 function crash(player, asteroid){
-  console.log('in crash')
-  console.log(socket)
-  console.log(this.socket)
   asteroid.destroy()
   socket.emit('destroyAsteroid', asteroid.index, false)
   player.disableBody(true, true);
@@ -260,7 +255,6 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
-  console.log('asteroids: ', this.asteroids)
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', asteroid.index, true)
   }
@@ -299,8 +293,6 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
-    // self.asteroids = self.physics.add.group();
-    console.log('asteroidArray: ', asteroidArray)
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, 'asteroids', 6)
       phaserAsteroid.setScale(asteroid.scale)
@@ -375,7 +367,6 @@ function getTimerDisplay(time) {
 }
 
 function getTime() {
-  console.log('ship: ', this.ship)
   if(this.ship.primary){
     this.socket.emit('getTime')
   }

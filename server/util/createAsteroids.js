@@ -13,6 +13,5 @@ module.exports = function() {
     asteroidHash[i] = true
   }
 
-  console.log('asteroids: ', asteroidArray)
   return { asteroidArray: asteroidArray, asteroidHash: asteroidHash }
 }
