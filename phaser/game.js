@@ -74,8 +74,6 @@ function create (){
     self.initialTime -= elapsedTime;
   })
 
-  // this.socket = io();
-  // socket = this.socket
   physics = self.physics
 
   startBkgd = self.add.image(500, 400, 'space')
@@ -335,13 +333,32 @@ function startSocketActions(self, allowedPlayersCount) {
 
   self.socket.on('updateTimer', function(time){
     if (time <= 0) {
-      endBkgd = this.add.image(500, 400, 'space')
-      gameOverText = this.add.text(500, 400, 'Game Over'.toUpperCase(), { fontSize: '32px' })
-      gameOverText.setOrigin(0.5)
+      endGame(self)
     } else {
       timerDisplay.setText(getTimerDisplay(time));
     }
   })
+}
+
+function getOutcome() {
+  if (score > scoreOther) return 'You Win!'
+  if (score === scoreOther) return 'You Tied!'
+  return 'You Lose!'
+}
+
+function endGame(self) {
+  hasGameStarted = false
+  self.ship.destroy()
+  Object.values(self.otherPlayers).forEach((player) => player.destroy())
+  timerDisplay.destroy()
+  let gameOverText = self.add.text(500, 300, 'Times Up:'.toUpperCase(), { fontSize: '32px' })
+  let outcomeText = self.add.text(500, 340, getOutcome().toUpperCase(), { fontSize: '32px' })
+  gameOverText.setOrigin(0.5)
+  outcomeText.setOrigin(0.5)
+  scoreText.setOrigin(0.5)
+  scoreText.setPosition(500, 400)
+  scoreTextOther.setOrigin(0.5)
+  scoreTextOther.setPosition(500, 420)
 }
 
 function updateText() {
