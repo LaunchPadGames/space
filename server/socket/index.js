@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 30})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -34,7 +34,8 @@ module.exports = io => {
       console.log('a user connected');
       const room = currentRoom(io, socket)
       let redisGame = await redisGetter(room)
-      redisGame['players'][socket.id] = createPlayer(socket)
+      redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
+      console.log('player: ', redisGame['players'])
       await redisSetter(room, redisGame)
       
       // send the players object to the new player
@@ -75,17 +76,28 @@ module.exports = io => {
         data.owner_id = socket.id;
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
-      socket.on('destroyAsteroid', async function(asteroidIndex){
+      socket.on('destroyAsteroid', async function(asteroidIndex, laser){
+
         redisGame = await redisGetter(room)
-        redisGame['asteroids'][asteroidIndex] = false
+        if(laser && redisGame['asteroids'][asteroidIndex]){
+          redisGame['players'][socket.id]['score'] += 10
+        }
+          redisGame['asteroids'][asteroidIndex] = false
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
+        io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})
       });
       socket.on('disablePlayer', function(socketId){
         socket.to(room).broadcast.emit('disableOtherPlayer', socketId)
       })
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
+      })
+      socket.on('getTime', async function(socketId){
+        redisGame = await redisGetter(room)
+        redisGame['time'] = redisGame['time'] - 1
+        redisSetter(room, redisGame)
+        io.sockets.in(room).emit('updateTimer', redisGame['time']);
       })
     }
   })
