@@ -40,6 +40,9 @@ let selectorYPos2 = 653;
 let timerDisplay;
 let timedEvent;
 let isTimerRunning = false;
+let waitingText;
+let roomTagInstructionsText;
+let roomTagText;
 
 let game = new Phaser.Game(config);
 
@@ -292,6 +295,9 @@ function startSocketActions(self, allowedPlayersCount) {
       }
     });
   });
+  self.socket.on('waitingForPlayers', ({ roomTag, time }) => {
+    displayWaitScreen(self, roomTag, time)
+  })
   self.socket.on('newPlayer', function(playerInfo){
     addOtherPlayers(self, playerInfo)
   });
@@ -312,6 +318,7 @@ function startSocketActions(self, allowedPlayersCount) {
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
     })
     // start game
+    clearWaitScreen()
     hasGameStarted = true
   })
   self.socket.on('laserUpdate', function(laser, owner) {
@@ -386,5 +393,23 @@ function getTimerDisplay(time) {
 function getTime() {
   if(this.ship.primary){
     this.socket.emit('getTime')
+  }
+}
+
+function displayWaitScreen(self, roomTag, time) {
+  timerDisplay.setText(getTimerDisplay(time));
+  waitingText = self.add.text(500, 300, 'Waiting for other player to join...'.toUpperCase(), { fontSize: '32px' })
+  roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this room code:', { fontSize: '28px' })
+  roomTagText = self.add.text(500, 470, roomTag, { fontSize: '28px' })
+  waitingText.setOrigin(0.5)
+  roomTagInstructionsText.setOrigin(0.5)
+  roomTagText.setOrigin(0.5)
+}
+
+function clearWaitScreen() {
+  if (waitingText) {
+    waitingText.destroy()
+    roomTagInstructionsText.destroy()
+    roomTagText.destroy()
   }
 }
