@@ -43,7 +43,9 @@ module.exports = io => {
 
       // update all other players of the new player
       socket.to(room).broadcast.emit('newPlayer', redisGame['players'][socket.id]);
-      if(currentPlayersCount === playerLimit){
+      if (currentPlayersCount !== playerLimit) {
+        socket.emit('waitingForPlayers', { roomTag, time: redisGame['time'] });
+      } else {
         const asteroidData = createAsteroids()
         redisGame = await redisGetter(room)
         redisGame['asteroids'] = asteroidData['asteroidHash']
