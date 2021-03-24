@@ -102,12 +102,6 @@ module.exports = io => {
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
       })
-      // socket.on('getTime', async function(socketId){
-      //   redisGame = await redisGetter(room)
-      //   redisGame['time'] = redisGame['time'] - 1
-      //   redisSetter(room, redisGame)
-      //   io.sockets.in(room).emit('updateTimer', redisGame['time']);
-      // })
     }
   })
 };

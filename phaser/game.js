@@ -119,12 +119,6 @@ function update(time) {
       startSocketActions(this, allowedPlayersCount)
     }
   } else if (hasGameStarted) {
-    if (!isTimerRunning) {
-      // Each 1000 ms call getTime
-      // timedEvent = this.time.addEvent({ delay: 1000, callback: getTime, callbackScope: this, loop: true });
-      isTimerRunning = true
-    }
-
     if (this.ship) {
       if (this.cursors.up.isDown) {
         this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
@@ -390,12 +384,6 @@ function getTimerDisplay(time) {
   let seconds = (remainingSeconds < 10) ? '0' + remainingSeconds : remainingSeconds
   return minutes + ':' + seconds
 }
-
-// function getTime() {
-//   if(this.ship.primary){
-//     this.socket.emit('getTime')
-//   }
-// }
 
 function displayWaitScreen(self, roomTag, time) {
   timerDisplay.setText(getTimerDisplay(time));
