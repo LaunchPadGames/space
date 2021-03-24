@@ -121,7 +121,7 @@ function update(time) {
   } else if (hasGameStarted) {
     if (!isTimerRunning) {
       // Each 1000 ms call getTime
-      timedEvent = this.time.addEvent({ delay: 1000, callback: getTime, callbackScope: this, loop: true });
+      // timedEvent = this.time.addEvent({ delay: 1000, callback: getTime, callbackScope: this, loop: true });
       isTimerRunning = true
     }
 
@@ -349,6 +349,7 @@ function startSocketActions(self, allowedPlayersCount) {
     updateScoreText()
   })
   self.socket.on('updateTimer', function(time){
+    console.log('time: ', time)
     if (time <= 0) {
       endGame(self)
     } else {
@@ -390,11 +391,11 @@ function getTimerDisplay(time) {
   return minutes + ':' + seconds
 }
 
-function getTime() {
-  if(this.ship.primary){
-    this.socket.emit('getTime')
-  }
-}
+// function getTime() {
+//   if(this.ship.primary){
+//     this.socket.emit('getTime')
+//   }
+// }
 
 function displayWaitScreen(self, roomTag, time) {
   timerDisplay.setText(getTimerDisplay(time));

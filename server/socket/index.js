@@ -51,6 +51,13 @@ module.exports = io => {
         redisGame['asteroids'] = asteroidData['asteroidHash']
         redisSetter(room, redisGame)
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
+        let intervalId = setInterval(async function(){
+          let redisGame = await redisGetter(room)
+          console.log('time: ', redisGame['time'])
+          redisGame['time'] = redisGame['time'] - 1
+          redisSetter(room, redisGame)
+          io.sockets.in(room).emit('updateTimer', redisGame['time']);
+        }, 1000)
       }
       socket.on('disconnect', async function () {
         console.log('user disconnected');
@@ -95,12 +102,12 @@ module.exports = io => {
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
       })
-      socket.on('getTime', async function(socketId){
-        redisGame = await redisGetter(room)
-        redisGame['time'] = redisGame['time'] - 1
-        redisSetter(room, redisGame)
-        io.sockets.in(room).emit('updateTimer', redisGame['time']);
-      })
+      // socket.on('getTime', async function(socketId){
+      //   redisGame = await redisGetter(room)
+      //   redisGame['time'] = redisGame['time'] - 1
+      //   redisSetter(room, redisGame)
+      //   io.sockets.in(room).emit('updateTimer', redisGame['time']);
+      // })
     }
   })
 };
