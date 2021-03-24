@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 30})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 30, 'intervalId': null})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -49,15 +49,16 @@ module.exports = io => {
         const asteroidData = createAsteroids()
         redisGame = await redisGetter(room)
         redisGame['asteroids'] = asteroidData['asteroidHash']
-        redisSetter(room, redisGame)
-        io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
         let intervalId = setInterval(async function(){
           let redisGame = await redisGetter(room)
-          if(redisGame['time'] === 0) clearInterval(intervalId)
+          if(redisGame['time'] === 0) clearInterval(redisGame['intervalId'])
           redisGame['time'] = redisGame['time'] - 1
           redisSetter(room, redisGame)
           io.sockets.in(room).emit('updateTimer', redisGame['time']);
         }, 1000)
+        redisGame['intervalId'] = intervalId[Symbol.toPrimitive]()
+        redisSetter(room, redisGame)
+        io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
       socket.on('disconnect', async function () {
         console.log('user disconnected');
