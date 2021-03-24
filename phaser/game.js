@@ -343,7 +343,6 @@ function startSocketActions(self, allowedPlayersCount) {
     updateScoreText()
   })
   self.socket.on('updateTimer', function(time){
-    console.log('time: ', time)
     if (time <= 0) {
       endGame(self)
     } else {

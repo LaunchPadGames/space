@@ -53,7 +53,7 @@ module.exports = io => {
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
         let intervalId = setInterval(async function(){
           let redisGame = await redisGetter(room)
-          console.log('time: ', redisGame['time'])
+          if(redisGame['time'] === 0) clearInterval(intervalId)
           redisGame['time'] = redisGame['time'] - 1
           redisSetter(room, redisGame)
           io.sockets.in(room).emit('updateTimer', redisGame['time']);
