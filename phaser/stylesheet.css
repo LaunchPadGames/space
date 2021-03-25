@@ -6,8 +6,8 @@ body {
 .room-tag {
   position: absolute;
   color: white;
-  top:  52%;
-  left: 35%;
+  top: 450px;
+  left: 500px;
   transform: translate(-50%,-50%);
   font-size: 20px
 }
