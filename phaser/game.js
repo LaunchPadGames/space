@@ -387,17 +387,23 @@ function getTimerDisplay(time) {
 function displayWaitScreen(self, roomTag, time) {
   timerDisplay.setText(getTimerDisplay(time));
   waitingText = self.add.text(500, 300, 'Waiting for other player to join...'.toUpperCase(), { fontSize: '32px' })
-  roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this room code:', { fontSize: '28px' })
-  roomTagText = self.add.text(500, 470, roomTag, { fontSize: '28px' })
+  roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this url:', { fontSize: '28px' })
+  // roomTagText = self.add.text(500, 470, 'http://localhost:3000?room_tag=' + roomTag, { fontSize: '20px' })
   waitingText.setOrigin(0.5)
   roomTagInstructionsText.setOrigin(0.5)
-  roomTagText.setOrigin(0.5)
+  // roomTagText.setOrigin(0.5)
+  roomTagText = document.createElement("P")
+  roomTagText.innerText = 'http://localhost:3000?room_tag=' + roomTag
+  roomTagText.classList.add("room-tag")
+  let canvas = document.getElementsByTagName('canvas')[0]
+  document.body.appendChild(roomTagText)
 }
 
 function clearWaitScreen() {
   if (waitingText) {
     waitingText.destroy()
     roomTagInstructionsText.destroy()
-    roomTagText.destroy()
+    roomTagText.parentNode.removeChild(roomTagText)
+    // roomTagText.destroy()
   }
 }
