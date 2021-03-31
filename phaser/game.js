@@ -187,8 +187,7 @@ function update(time) {
         rotation: this.ship.rotation
       }
     }
-  }
-
+  
   if(this.asteroids){
     this.asteroids.children.entries.forEach((asteroid) => {
       if (asteroid.x < 0) asteroid.x = canvasWidth
@@ -212,7 +211,6 @@ function addPlayer(self, playerInfo){
 }
 
 function addOtherPlayers(self, playerInfo){
-  return
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
