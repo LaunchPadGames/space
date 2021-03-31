@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 60, 'intervalId': null})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 20, 'intervalId': null})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
