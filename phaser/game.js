@@ -32,7 +32,8 @@ let lastFired = 100;
 let socket;
 let physics;
 let startScreen;
-let gameStarted = false;
+let hasJoined = false;
+let hasGameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
@@ -42,6 +43,12 @@ let spray = false;
 let shield_level = 0;
 const angles = [-0.4, -0.2, 0.2, 0.4]
 let speed = 100
+let timerDisplay;
+let timedEvent;
+let isTimerRunning = false;
+let waitingText;
+let roomTagInstructionsText;
+let roomTagText;
 
 let game = new Phaser.Game(config);
 
@@ -81,9 +88,24 @@ function create (){
   self.ship = null
   self.shipContainer = null
   self.otherPlayers = {}
-  // this.socket = io();
-  // socket = this.socket
-  physics = this.physics
+  scoreText = self.add.text(5, 5, 'Your Score: 0')
+  scoreTextOther = self.add.text(5, 20, 'Opponent Score: 0')
+
+  // Timer
+  timerDisplay = self.add.text(500, 15, getTimerDisplay(0))
+  timerDisplay.setOrigin(0.5)
+
+  self.hiddenTimeStamp = 0;
+  game.events.on('hidden', () => {
+    self.hiddenTimeStamp = performance.now();
+  });
+
+  game.events.on('visible', () => {
+    let elapsedTime = Math.floor((performance.now() - self.hiddenTimeStamp)/1000); //seconds
+    self.initialTime -= elapsedTime;
+  })
+
+  physics = self.physics
 
   startBkgd = self.add.image(500, 400, 'space')
   title = self.add.image(500, 200, 'title')
@@ -93,15 +115,13 @@ function create (){
   startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
 
   // Lasers
-  this.laserGroup = new LaserGroup(this);
+  self.laserGroup = new LaserGroup(self);
 
-  self.cursors = this.input.keyboard.createCursorKeys();
-  scoreText = this.add.text(5, 5, 'Your Score: 0')
-  scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
+  self.cursors = self.input.keyboard.createCursorKeys();
 }
 
 function update(time) {
-  if (!gameStarted) {
+  if (!hasJoined) {
     if (this.cursors.up.isDown) {
       selector.y = selectorYPos1
     }
@@ -109,7 +129,7 @@ function update(time) {
       selector.y = selectorYPos2
     }
     if (this.cursors.space.isDown) {
-      gameStarted = true
+      hasJoined = true
       clearStartScreen()
       const allowedPlayersCount = selector.y === selectorYPos1 ? 1 : 2
       startSocketActions(this, allowedPlayersCount)
@@ -148,23 +168,24 @@ function update(time) {
       lastFired = time;
     }
 
-    if (this.ship.x < 0) this.ship.x = canvasWidth
-    if (this.ship.x > canvasWidth) this.ship.x = 0
-    if (this.ship.y < 0) this.ship.y = canvasHeight
-    if (this.ship.y > canvasHeight) this.ship.y = 0
+      if (this.ship.x < 0) this.ship.x = canvasWidth
+      if (this.ship.x > canvasWidth) this.ship.x = 0
+      if (this.ship.y < 0) this.ship.y = canvasHeight
+      if (this.ship.y > canvasHeight) this.ship.y = 0
 
-    let x = this.ship.x
-    let y = this.ship.y
-    let r = this.ship.rotation
+      let x = this.ship.x
+      let y = this.ship.y
+      let r = this.ship.rotation
 
-    if( this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)){
-      this.socket.emit('playerMovement', {x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation})
-    }
+      if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
+        this.socket.emit('playerMovement', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation })
+      }
 
-    this.ship.oldPosition = {
-      x: this.ship.x,
-      y: this.ship.y,
-      rotation: this.ship.rotation
+      this.ship.oldPosition = {
+        x: this.ship.x,
+        y: this.ship.y,
+        rotation: this.ship.rotation
+      }
     }
   }
 
@@ -180,10 +201,11 @@ function update(time) {
 
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  ship.primary = playerInfo.primary
+  ship.playerId = playerInfo.playerId
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
-  console.log(overlap)
   overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
@@ -242,11 +264,8 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 }
 
 function crash(player, asteroid){
-  console.log('in crash')
-  console.log(socket)
-  console.log(this.socket)
   asteroid.destroy()
-  socket.emit('destroyAsteroid', asteroid.index)
+  socket.emit('destroyAsteroid', asteroid.index, false)
   if (shield_level === 0) {
     player.disableBody(true, true);
     socket.emit('disablePlayer', socket.id)
@@ -281,11 +300,8 @@ function pauseCollider(player) {
 
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
-  laser.destroy();
   if (laser.texture.key === 'laserGreen') {
-    score += 10;
-  } else {
-    scoreOther += 10;
+    socket.emit('destroyAsteroid', asteroid.index, true)
   }
   // if (Phaser.Math.Between(0, 100) > 90) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
@@ -318,6 +334,7 @@ function destroyAsteroid(laser, asteroid) {
   //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
   // }
   updateText();
+  laser.destroy()
 }
 
 function rateOfFirePowerup(ship, powerup) {
@@ -370,6 +387,9 @@ function startSocketActions(self, allowedPlayersCount) {
       }
     });
   });
+  self.socket.on('waitingForPlayers', ({ roomTag, time }) => {
+    displayWaitScreen(self, roomTag, time)
+  })
   self.socket.on('newPlayer', function(playerInfo){
     addOtherPlayers(self, playerInfo)
   });
@@ -382,8 +402,6 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
   self.socket.on('createAsteroids', function (asteroidArray) {
-    // self.asteroids = self.physics.add.group();
-    console.log('asteroidArray: ', asteroidArray)
     asteroidArray.forEach((asteroid) => {
       let phaserAsteroid = self.asteroids.create(500, 500, `asteroid${asteroid.scale}`)
       phaserAsteroid.setScale(1.5)
@@ -391,6 +409,9 @@ function startSocketActions(self, allowedPlayersCount) {
       phaserAsteroid.setPosition(asteroid.x, asteroid.y)
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
     })
+    // start game
+    clearWaitScreen()
+    hasGameStarted = true
   })
   self.socket.on('laserUpdate', function(laser, owner) {
     let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
@@ -411,9 +432,76 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
+  self.socket.on('updateScore', function({socketId, score: newScore}){
+    if (socketId === self.ship.playerId) {
+      score = newScore
+    } else {
+      scoreOther = newScore
+    }
+    updateScoreText()
+  })
+  self.socket.on('updateTimer', function(time){
+    if (time <= 0) {
+      endGame(self)
+    } else {
+      timerDisplay.setText(getTimerDisplay(time));
+    }
+  })
 }
 
-function updateText() {
+function getOutcome() {
+  if (score > scoreOther) return 'You Win!'
+  if (score === scoreOther) return 'You Tied!'
+  return 'You Lose!'
+}
+
+function endGame(self) {
+  hasGameStarted = false
+  self.ship.destroy()
+  Object.values(self.otherPlayers).forEach((player) => player.destroy())
+  timerDisplay.destroy()
+  let gameOverText = self.add.text(500, 300, 'Times Up:'.toUpperCase(), { fontSize: '32px' })
+  let outcomeText = self.add.text(500, 340, getOutcome().toUpperCase(), { fontSize: '32px' })
+  gameOverText.setOrigin(0.5)
+  outcomeText.setOrigin(0.5)
+  scoreText.setOrigin(0.5)
+  scoreText.setPosition(500, 400)
+  scoreTextOther.setOrigin(0.5)
+  scoreTextOther.setPosition(500, 420)
+}
+
+function updateScoreText() {
   scoreText.setText('Your Score: ' + score);
   scoreTextOther.setText('Opponent Score: ' + scoreOther);
+}
+
+function getTimerDisplay(time) {
+  let minutes = Math.floor(time / 60)
+  let remainingSeconds = time % 60
+  let seconds = (remainingSeconds < 10) ? '0' + remainingSeconds : remainingSeconds
+  return minutes + ':' + seconds
+}
+
+function displayWaitScreen(self, roomTag, time) {
+  timerDisplay.setText(getTimerDisplay(time));
+  waitingText = self.add.text(500, 300, 'Waiting for other player to join...'.toUpperCase(), { fontSize: '32px' })
+  roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this url:', { fontSize: '28px' })
+  // roomTagText = self.add.text(500, 470, 'http://localhost:3000?room_tag=' + roomTag, { fontSize: '20px' })
+  waitingText.setOrigin(0.5)
+  roomTagInstructionsText.setOrigin(0.5)
+  // roomTagText.setOrigin(0.5)
+  roomTagText = document.createElement("P")
+  roomTagText.innerText = 'http://localhost:3000?room_tag=' + roomTag
+  roomTagText.classList.add("room-tag")
+  let canvas = document.getElementsByTagName('canvas')[0]
+  document.body.appendChild(roomTagText)
+}
+
+function clearWaitScreen() {
+  if (waitingText) {
+    waitingText.destroy()
+    roomTagInstructionsText.destroy()
+    roomTagText.parentNode.removeChild(roomTagText)
+    // roomTagText.destroy()
+  }
 }
