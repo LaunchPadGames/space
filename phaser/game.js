@@ -266,6 +266,7 @@ function crash(player, asteroid){
     shield_level -= 1;
     let texture = shield_level === 0 ? 'ship' : 'ship_shield2'
     player.setTexture(texture)
+    socket.emit('shieldUpdate', {socketId: player.playerId, shieldLevel: shield_level})
   }
 }
 
@@ -446,7 +447,12 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('enableOtherPlayerShieldPowerUp', function(data){
     let socketId = data['socketId']
     otherPlayer = self.otherPlayers[socketId]
-    shieldPowerup(otherPlayer, )
+    shieldPowerup(otherPlayer)
+  })
+  self.socket.on('shieldUpdateOtherPlayers', function(data){
+    let socketId = data['socketId']
+    otherPlayer = self.otherPlayers[socketId]
+    // shield_level 
   })
 }
 
