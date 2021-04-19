@@ -295,25 +295,27 @@ function destroyAsteroid(laser, asteroid) {
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', asteroid.index, true)
   }
-  // if (Phaser.Math.Between(0, 100) > 90) {
+
+  let powerupNum = Phaser.Math.Between(0, 100)
+  // if (powerupNum <= 25) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
   //   physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
   // }
-  //
-  // if (Phaser.Math.Between(0, 100) > 90) {
+  
+  // if (powerupNum > 25 && powerupNum <= 50) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
   //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
   // }
-  //
-  // if (Phaser.Math.Between(0, 100) > 90) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
-  // }
-
-  if (Phaser.Math.Between(0, 100) > 90) {
-    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
-    physics.add.overlap(scene.ship, powerup, speedPowerup);
+  
+  if (powerupNum > 90) {
+    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+    physics.add.overlap(scene.ship, powerup, shieldPowerup);
   }
+
+  // if (powerupNum > 75) {
+  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, speedPowerup);
+  // }
 
   // if (Phaser.Math.Between(0, 100) > 90) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
@@ -344,10 +346,13 @@ function sprayPowerup(ship, powerup) {
   powerup.destroy();
 }
 
-function shieldPowerup(ship, powerup) {
+function shieldPowerup(ship, powerup=null) {
   shield_level = 2;
   ship.setTexture('ship_shield1')
-  powerup.destroy();
+  if(powerup){
+    powerup.destroy();
+  }
+  socket.emit('shieldPowerUp', {socketId: ship.playerId});
 }
 
 function speedPowerup(ship, powerup) {
@@ -437,6 +442,11 @@ function startSocketActions(self, allowedPlayersCount) {
     } else {
       timerDisplay.setText(getTimerDisplay(time));
     }
+  })
+  self.socket.on('enableOtherPlayerShieldPowerUp', function(data){
+    let socketId = data['socketId']
+    otherPlayer = self.otherPlayers[socketId]
+    shieldPowerup(otherPlayer, )
   })
 }
 
