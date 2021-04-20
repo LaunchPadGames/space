@@ -109,6 +109,9 @@ module.exports = io => {
       socket.on('shieldUpdate', function(data){
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
+      socket.on('powerup', function(data){
+        socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
+      })
     }
   })
 };

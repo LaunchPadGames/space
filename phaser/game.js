@@ -311,8 +311,9 @@ function destroyAsteroid(laser, asteroid) {
   // }
   
   if (powerupNum > 90) {
-    const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+    let powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
     physics.add.overlap(scene.ship, powerup, shieldPowerup);
+    socket.emit('powerup', {powerup: 'shield_powerup', x: asteroid.body.x, y: asteroid.body.y})
   }
 
   // if (powerupNum > 75) {
@@ -354,6 +355,7 @@ function shieldPowerup(ship, powerup=null) {
   ship.setTexture('ship_shield1')
   if(powerup){
     powerup.destroy();
+    // socket.emit('destroyPowerup', )
   }
   socket.emit('shieldPowerUp', {socketId: ship.playerId});
 }
@@ -466,6 +468,10 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer = self.otherPlayers[socketId]
     otherPlayer.shieldLevel = data['shieldLevel']
     updateShieldPowerUp(otherPlayer)
+  })
+  self.socket.on('powerupUpdateOtherPlayers', function(data){
+    let powerup = physics.add.sprite(data['x'], data['y'], data['powerup'], 0);
+    physics.add.overlap(self.ship, powerup, shieldPowerup);
   })
 }
 
