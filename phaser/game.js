@@ -196,6 +196,7 @@ function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.primary = playerInfo.primary
   ship.playerId = playerInfo.playerId
+  ship.shieldLevel = 0
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
@@ -206,6 +207,7 @@ function addPlayer(self, playerInfo){
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  otherPlayer.shieldLevel = 0
   otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
@@ -258,15 +260,15 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 function crash(player, asteroid){
   asteroid.destroy()
   socket.emit('destroyAsteroid', asteroid.index, false)
-  if (shield_level === 0) {
+  if (player.shieldLevel === 0) {
     player.disableBody(true, true);
     socket.emit('disablePlayer', socket.id)
     resetPlayer(player)
   } else {
-    shield_level -= 1;
-    let texture = shield_level === 0 ? 'ship' : 'ship_shield2'
+    player.shieldLevel -= 1;
+    let texture = player.shieldLevel === 0 ? 'ship' : 'ship_shield2'
     player.setTexture(texture)
-    socket.emit('shieldUpdate', {socketId: player.playerId, shieldLevel: shield_level})
+    socket.emit('shieldUpdate', {socketId: player.playerId, shieldLevel: player.shieldLevel})
   }
 }
 
@@ -348,12 +350,22 @@ function sprayPowerup(ship, powerup) {
 }
 
 function shieldPowerup(ship, powerup=null) {
-  shield_level = 2;
+  ship.shieldLevel = 2;
   ship.setTexture('ship_shield1')
   if(powerup){
     powerup.destroy();
   }
   socket.emit('shieldPowerUp', {socketId: ship.playerId});
+}
+
+function updateShieldPowerUp(player){
+  if(player.shieldLevel === 2){
+    player.setTexture('ship_shield1')
+  } else if(player.shieldLevel === 1){
+    player.setTexture('ship_shield2')
+  } else{
+    player.setTexture('ship')
+  }
 }
 
 function speedPowerup(ship, powerup) {
@@ -452,7 +464,8 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('shieldUpdateOtherPlayers', function(data){
     let socketId = data['socketId']
     otherPlayer = self.otherPlayers[socketId]
-    // shield_level 
+    otherPlayer.shieldLevel = data['shieldLevel']
+    updateShieldPowerUp(otherPlayer)
   })
 }
 
