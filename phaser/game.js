@@ -49,6 +49,7 @@ let isTimerRunning = false;
 let waitingText;
 let roomTagInstructionsText;
 let roomTagText;
+let powerupHash = {}
 
 let game = new Phaser.Game(config);
 

@@ -1,7 +1,7 @@
 const { 
   createPlayer, 
   createAsteroids, 
-  roomTagGenerator,
+  tagGenerator,
   roomTagParser,
   currentRoom,
   redisSetter,
@@ -11,7 +11,7 @@ const { Game, Player } = require('../../models')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
-    const roomTag = roomTagParser(socket) || roomTagGenerator()
+    const roomTag = roomTagParser(socket) || tagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     let games = await Game.findOrCreate({
       where: { roomTag: roomTag},
@@ -110,6 +110,7 @@ module.exports = io => {
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
       socket.on('powerup', function(data){
+        io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
         socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
       })
     }
