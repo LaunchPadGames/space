@@ -110,7 +110,7 @@ module.exports = io => {
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
       socket.on('powerup', function(data){
-        io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
+        // io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
         socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
       })
     }

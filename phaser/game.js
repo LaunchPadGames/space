@@ -354,6 +354,7 @@ function sprayPowerup(ship, powerup) {
 function shieldPowerup(ship, powerup=null) {
   ship.shieldLevel = 2;
   ship.setTexture('ship_shield1')
+  console.log('powerup: ', powerup)
   if(powerup){
     powerup.destroy();
     // socket.emit('destroyPowerup', )
@@ -473,6 +474,9 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('powerupUpdateOtherPlayers', function(data){
     let powerup = physics.add.sprite(data['x'], data['y'], data['powerup'], 0);
     physics.add.overlap(self.ship, powerup, shieldPowerup);
+  })
+  self.socket.on('setPowerupHash', function(params){
+    powerupHash[params['id']] = params['data']
   })
 }
 
