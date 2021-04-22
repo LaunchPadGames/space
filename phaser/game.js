@@ -310,12 +310,6 @@ function destroyAsteroid(laser, asteroid) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
   //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
   // }
-  
-  // if (powerupNum > 90) {
-  //   let powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
-  //   // socket.emit('powerup', {powerup: 'shield_powerup', x: asteroid.body.x, y: asteroid.body.y})
-  // }
 
   // if (powerupNum > 75) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
@@ -468,7 +462,15 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('updatePowerups', function(data){
     let powerup = physics.add.sprite(data['x'], data['y'], data['type'], 0);
     powerup.id = data['id']
-    physics.add.overlap(self.ship, powerup, shieldPowerup);
+    if(data['type'] === 'shield_powerup'){
+      physics.add.overlap(self.ship, powerup, shieldPowerup);
+    } else if(data['type'] === 'silver_powerup'){
+      physics.add.overlap(self.ship, powerup, rateOfFirePowerup);
+    } else if(data['type'] === 'gold_powerup){
+      physics.add.overlap(self.ship, powerup, sprayPowerup);
+    } else {
+      physics.add.overlap(self.ship, powerup, speedPowerup);
+    }
     powerupHash[data['id']] = powerup
   })
   self.socket.on('shieldPowerUp', function(data){
