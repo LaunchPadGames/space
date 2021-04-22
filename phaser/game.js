@@ -352,14 +352,13 @@ function sprayPowerup(ship, powerup) {
 }
 
 function shieldPowerup(ship, powerup=null) {
-  ship.shieldLevel = 2;
-  ship.setTexture('ship_shield1')
-  console.log('powerup: ', powerup)
+  // ship.shieldLevel = 2;
+  // 
   if(powerup){
-    powerup.destroy();
-    // socket.emit('destroyPowerup', )
+    // powerup.destroy();
+    socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
   }
-  socket.emit('shieldPowerUp', {socketId: ship.playerId});
+  // socket.emit('shieldPowerUp', {socketId: ship.playerId});
 }
 
 function updateShieldPowerUp(player){
@@ -460,11 +459,6 @@ function startSocketActions(self, allowedPlayersCount) {
       timerDisplay.setText(getTimerDisplay(time));
     }
   })
-  self.socket.on('enableOtherPlayerShieldPowerUp', function(data){
-    let socketId = data['socketId']
-    otherPlayer = self.otherPlayers[socketId]
-    shieldPowerup(otherPlayer)
-  })
   self.socket.on('shieldUpdateOtherPlayers', function(data){
     let socketId = data['socketId']
     otherPlayer = self.otherPlayers[socketId]
@@ -476,6 +470,18 @@ function startSocketActions(self, allowedPlayersCount) {
     powerup.id = data['id']
     physics.add.overlap(self.ship, powerup, shieldPowerup);
     powerupHash[data['id']] = powerup
+  })
+  self.socket.on('shieldPowerUp', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy()
+    if(self.ship.playerId === data['playerId']){
+      self.ship.shieldLevel = 2;
+      self.ship.setTexture('ship_shield1')
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.shieldLevel = 2;
+      otherPlayer.setTexture('ship_shield1')
+    }
   })
 }
 

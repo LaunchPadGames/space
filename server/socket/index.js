@@ -87,11 +87,8 @@ module.exports = io => {
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
       socket.on('destroyAsteroid', async function(data){
-        console.log('data: ', data)
         let laser = data['laser']
         let asteroidIndex = data['asteroidIndex']
-        console.log('laser: ', laser)
-        console.log('asteroidIndex: ', asteroidIndex)
         redisGame = await redisGetter(room)
         if(laser && redisGame['asteroids'][asteroidIndex]){
           redisGame['players'][socket.id]['score'] += 10
@@ -118,16 +115,19 @@ module.exports = io => {
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
       })
-      socket.on('shieldPowerUp', function(data){
-        socket.to(room).broadcast.emit('enableOtherPlayerShieldPowerUp', data)
-      })
       socket.on('shieldUpdate', function(data){
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
-      // socket.on('powerup', function(data){
-      //   // io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
-      //   socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
-      // })
+      socket.on('destroyPowerup', async function(powerupId, type){
+        redisGame = await redisGetter(room)
+        if(redisGame['powerups'][powerupId]){
+          if(type === 'shield_powerup'){
+            io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
+          }
+        }
+        redisGame['powerups'][powerupId] = false
+        redisSetter(room, redisGame)
+      })
     }
   })
 };
