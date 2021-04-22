@@ -260,7 +260,7 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 
 function crash(player, asteroid){
   asteroid.destroy()
-  socket.emit('destroyAsteroid', asteroid.index, false)
+  socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: false})
   if (player.shieldLevel === 0) {
     player.disableBody(true, true);
     socket.emit('disablePlayer', socket.id)
@@ -297,7 +297,7 @@ function pauseCollider(player) {
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
   if (laser.texture.key === 'laserGreen') {
-    socket.emit('destroyAsteroid', asteroid.index, true)
+    socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
   }
 
   let powerupNum = Phaser.Math.Between(0, 100)
@@ -311,11 +311,11 @@ function destroyAsteroid(laser, asteroid) {
   //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
   // }
   
-  if (powerupNum > 90) {
-    let powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
-    physics.add.overlap(scene.ship, powerup, shieldPowerup);
-    socket.emit('powerup', {powerup: 'shield_powerup', x: asteroid.body.x, y: asteroid.body.y})
-  }
+  // if (powerupNum > 90) {
+  //   let powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
+  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
+  //   // socket.emit('powerup', {powerup: 'shield_powerup', x: asteroid.body.x, y: asteroid.body.y})
+  // }
 
   // if (powerupNum > 75) {
   //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
@@ -471,12 +471,11 @@ function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.shieldLevel = data['shieldLevel']
     updateShieldPowerUp(otherPlayer)
   })
-  self.socket.on('powerupUpdateOtherPlayers', function(data){
-    let powerup = physics.add.sprite(data['x'], data['y'], data['powerup'], 0);
+  self.socket.on('updatePowerups', function(data){
+    let powerup = physics.add.sprite(data['x'], data['y'], data['type'], 0);
+    powerup.id = data['id']
     physics.add.overlap(self.ship, powerup, shieldPowerup);
-  })
-  self.socket.on('setPowerupHash', function(params){
-    powerupHash[params['id']] = params['data']
+    powerupHash[data['id']] = powerup
   })
 }
 

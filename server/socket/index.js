@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300, 'intervalId': null})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300, 'intervalId': null, 'powerups': {}})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -86,16 +86,31 @@ module.exports = io => {
         data.owner_id = socket.id;
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
-      socket.on('destroyAsteroid', async function(asteroidIndex, laser){
-
+      socket.on('destroyAsteroid', async function(data){
+        console.log('data: ', data)
+        let laser = data['laser']
+        let asteroidIndex = data['asteroidIndex']
+        console.log('laser: ', laser)
+        console.log('asteroidIndex: ', asteroidIndex)
         redisGame = await redisGetter(room)
         if(laser && redisGame['asteroids'][asteroidIndex]){
           redisGame['players'][socket.id]['score'] += 10
         }
-          redisGame['asteroids'][asteroidIndex] = false
+        redisGame['asteroids'][asteroidIndex] = false
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
         io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})
+
+        if(laser){
+          let powerupNum = Math.floor(Math.random() * 100)
+          if (powerupNum > 90) {
+            let powerupId = tagGenerator()
+            redisGame['powerups'][powerupId] = true
+            redisSetter(room, redisGame)
+            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'shield_powerup'})
+          }
+        }
+
       });
       socket.on('disablePlayer', function(socketId){
         socket.to(room).broadcast.emit('disableOtherPlayer', socketId)
@@ -109,10 +124,10 @@ module.exports = io => {
       socket.on('shieldUpdate', function(data){
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
-      socket.on('powerup', function(data){
-        // io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
-        socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
-      })
+      // socket.on('powerup', function(data){
+      //   // io.sockets.in(room).emit('setPowerupHash', {id: tagGenerator(), data: data})
+      //   socket.to(room).broadcast.emit('powerupUpdateOtherPlayers', data)
+      // })
     }
   })
 };
