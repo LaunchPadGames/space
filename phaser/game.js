@@ -345,14 +345,10 @@ function sprayPowerup(ship, powerup) {
   powerup.destroy();
 }
 
-function shieldPowerup(ship, powerup=null) {
-  // ship.shieldLevel = 2;
-  // 
+function shieldPowerup(ship, powerup) {
   if(powerup){
-    // powerup.destroy();
     socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
   }
-  // socket.emit('shieldPowerUp', {socketId: ship.playerId});
 }
 
 function updateShieldPowerUp(player){
