@@ -299,33 +299,6 @@ function destroyAsteroid(laser, asteroid) {
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
   }
-
-  let powerupNum = Phaser.Math.Between(0, 100)
-  // if (powerupNum <= 25) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
-  // }
-  
-  // if (powerupNum > 25 && powerupNum <= 50) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
-  // }
-
-  // if (powerupNum > 75) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'star_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, speedPowerup);
-  // }
-
-  // if (Phaser.Math.Between(0, 100) > 90) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'silver_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, rateOfFirePowerup);
-  // } else if (Phaser.Math.Between(0, 100) > 90) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'shield_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, shieldPowerup);
-  // } else if (Phaser.Math.Between(0, 100) > 95) {
-  //   const powerup = physics.add.sprite(asteroid.body.x, asteroid.body.y, 'gold_powerup', 0);
-  //   physics.add.overlap(scene.ship, powerup, sprayPowerup);
-  // }
   laser.destroy()
 }
 
@@ -480,6 +453,30 @@ function startSocketActions(self, allowedPlayersCount) {
       otherPlayer.shieldLevel = 2;
       otherPlayer.setTexture('ship_shield1')
     }
+  })
+  self.socket.on('silverPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    rateOfFire -= 70;
+    setTimeout(function() {
+      rateOfFire += 70;
+    }, 20000)
+  })
+  self.socket.on('goldPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    spray = true;
+    setTimeout(function() {
+      spray = false;
+    }, 10000)
+  })
+  self.socket.on('starPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    speed += 600
+    setTimeout(function() {
+      speed -= 600
+    }, 10000)
   })
 }
 

@@ -138,6 +138,12 @@ module.exports = io => {
         if(redisGame['powerups'][powerupId]){
           if(type === 'shield_powerup'){
             io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
+          } else if(type === 'silver_powerup'){
+            io.sockets.in(room).emit('silverPowerup', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
+          } else if(type === 'gold_powerup'){
+            io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
+          } else {
+            io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
           }
         }
         redisGame['powerups'][powerupId] = false
