@@ -467,10 +467,20 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('goldPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
-    self.ship.spray = true;
-    setTimeout(function() {
-      self.ship.spray = false;
-    }, 10000)
+    if(self.ship.playerId === data['playerId']){
+      self.ship.spray = true
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.spray = true;
+    }
+  })
+  self.socket.on('goldPowerupOff', function(data){
+    if(self.ship.playerId === data['playerId']){
+      self.ship.spray = false
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.spray = false;
+    }
   })
   self.socket.on('starPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
