@@ -105,7 +105,7 @@ module.exports = io => {
             // redisGame['powerups'][powerupId] = true
             // redisSetter(room, redisGame)
             // io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'silver_powerup'})
-          } if(powerupNum >= 70 && powerupNum < 80){
+          } if(powerupNum >= 70){
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)
@@ -116,10 +116,10 @@ module.exports = io => {
             // redisSetter(room, redisGame)
             // io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'star_powerup'})
           } if (powerupNum > 90) {
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'shield_powerup'})
+            // let powerupId = tagGenerator()
+            // redisGame['powerups'][powerupId] = true
+            // redisSetter(room, redisGame)
+            // io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'shield_powerup'})
           }
         }
 
@@ -150,7 +150,8 @@ module.exports = io => {
               if(timeoutId === this[Symbol.toPrimitive]()){
                 io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
               }
-            }, 10000);
+            }, 5000);
+            redisGame['players'][socket.id]['powerups'] = {}
             redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
             redisSetter(room, redisGame)
           } else {

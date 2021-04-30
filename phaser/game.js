@@ -219,7 +219,6 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 {
   constructor(scene) {
     super(scene.physics.world, scene);
-    this.ship = scene.ship
     this.createMultiple({
       classType: Laser,
       frameQuantity: 30, // 30 instances of Laser
@@ -231,9 +230,10 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 
   fireLaser(x, y, r) {
     const laser = this.getFirstDead(true, x, y, 'laserGreen');
+    let ship = this.scene.ship
     if (laser) {
       laser.fire(x, y, r);
-      if (this.ship.spray) {
+      if (ship.spray) {
         for(let i = 0; i <= 4; i++) {
           const laser = this.getFirstDead(true, x, y, 'laserGreen');
           laser.fire(x, y, r + angles[i]);
@@ -313,11 +313,9 @@ function rateOfFirePowerup(ship, powerup) {
 }
 
 function sprayPowerup(ship, powerup) {
-  spray = true;
-  setTimeout(function() {
-    spray = false;
-  }, 10000)
-  powerup.destroy();
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
+  }
 }
 
 function shieldPowerup(ship, powerup) {
@@ -437,7 +435,7 @@ function startSocketActions(self, allowedPlayersCount) {
       physics.add.overlap(self.ship, powerup, shieldPowerup);
     } else if(data['type'] === 'silver_powerup'){
       physics.add.overlap(self.ship, powerup, rateOfFirePowerup);
-    } else if(data['type'] === 'gold_powerup){
+    } else if(data['type'] === 'gold_powerup'){
       physics.add.overlap(self.ship, powerup, sprayPowerup);
     } else {
       physics.add.overlap(self.ship, powerup, speedPowerup);
