@@ -254,6 +254,7 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true);
     this.setAngle(r)
     this.setScale(0.5)
+    console.log('this.scene.asteroids: ', this.scene.asteroids)
     this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
@@ -297,6 +298,8 @@ function pauseCollider(player) {
 
 
 function destroyAsteroid(laser, asteroid) {
+  console.log('asteroid: ', asteroid)
+  console.log('laser: ', laser)
   asteroid.disableBody(true, true);
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
