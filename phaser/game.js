@@ -40,7 +40,6 @@ let selectorYPos2 = 653;
 let rateOfFire = 200;
 let scene = null;
 let spray = false;
-let shield_level = 0;
 const angles = [-0.4, -0.2, 0.2, 0.4]
 let speed = 100
 let timerDisplay;
@@ -198,6 +197,9 @@ function addPlayer(self, playerInfo){
   ship.primary = playerInfo.primary
   ship.playerId = playerInfo.playerId
   ship.shieldLevel = 0
+  ship.spray = false
+  ship.rateOfFire = 200
+  ship.speed = 100
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
@@ -217,7 +219,7 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 {
   constructor(scene) {
     super(scene.physics.world, scene);
-
+    this.ship = scene.ship
     this.createMultiple({
       classType: Laser,
       frameQuantity: 30, // 30 instances of Laser
@@ -231,7 +233,7 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
     const laser = this.getFirstDead(true, x, y, 'laserGreen');
     if (laser) {
       laser.fire(x, y, r);
-      if (spray) {
+      if (this.ship.spray) {
         for(let i = 0; i <= 4; i++) {
           const laser = this.getFirstDead(true, x, y, 'laserGreen');
           laser.fire(x, y, r + angles[i]);
@@ -465,9 +467,9 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('goldPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
-    spray = true;
+    self.ship.spray = true;
     setTimeout(function() {
-      spray = false;
+      self.ship.spray = false;
     }, 10000)
   })
   self.socket.on('starPowerup', function(data){
