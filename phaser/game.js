@@ -234,7 +234,7 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
     if (laser) {
       laser.fire(x, y, r);
       if (ship.spray) {
-        for(let i = 0; i <= 4; i++) {
+        for(let i = 0; i <= 3; i++) {
           const laser = this.getFirstDead(true, x, y, 'laserGreen');
           laser.fire(x, y, r + angles[i]);
         }
@@ -254,7 +254,7 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true);
     this.setAngle(r)
     this.setScale(0.5)
-    console.log('this.scene.asteroids: ', this.scene.asteroids)
+    console.log('this.scene: ', this.scene)
     this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
