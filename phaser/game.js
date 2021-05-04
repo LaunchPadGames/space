@@ -37,12 +37,18 @@ let hasGameStarted = false;
 let selector;
 let selectorYPos1 = 583;
 let selectorYPos2 = 653;
+let rateOfFire = 200;
+let scene = null;
+let spray = false;
+const angles = [-0.4, -0.2, 0.2, 0.4]
+let speed = 100
 let timerDisplay;
 let timedEvent;
 let isTimerRunning = false;
 let waitingText;
 let roomTagInstructionsText;
 let roomTagText;
+let powerupHash = {}
 
 let game = new Phaser.Game(config);
 
@@ -65,12 +71,22 @@ function preload (){
   this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
   this.load.image('laserGreen', 'assets/laserGreenR.png')
   this.load.image('laserBlue', 'assets/laserBlueR.png')
+  this.load.image('shield1', 'assets/shield1.png')
+  this.load.image('shield2', 'assets/shield2.png')
+  this.load.image('shield_powerup', 'assets/shield_gold.png')
+  this.load.image('star_powerup', 'assets/star_gold.png')
+  this.load.image('gold_powerup', 'assets/bolt_gold.png')
+  this.load.image('silver_powerup', 'assets/bolt_silver.png')
+  this.load.image('ship_shield1', 'assets/ship_shield1.png')
+  this.load.image('ship_shield2', 'assets/ship_shield2.png')
 }
 
 function create (){
   let self = this;
+  scene = this;
   self.asteroidArray = []
   self.ship = null
+  self.shipContainer = null
   self.otherPlayers = {}
   scoreText = self.add.text(5, 5, 'Your Score: 0')
   scoreTextOther = self.add.text(5, 20, 'Opponent Score: 0')
@@ -180,6 +196,10 @@ function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.primary = playerInfo.primary
   ship.playerId = playerInfo.playerId
+  ship.shieldLevel = 0
+  ship.spray = false
+  ship.rateOfFire = 200
+  ship.speed = 100
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
   overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
@@ -190,6 +210,7 @@ function addPlayer(self, playerInfo){
 
 function addOtherPlayers(self, playerInfo){
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
+  otherPlayer.shieldLevel = 0
   otherPlayer.setMaxVelocity(150, 150)
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
@@ -198,7 +219,6 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 {
   constructor(scene) {
     super(scene.physics.world, scene);
-
     this.createMultiple({
       classType: Laser,
       frameQuantity: 30, // 30 instances of Laser
@@ -210,8 +230,15 @@ class LaserGroup extends Phaser.Physics.Arcade.Group
 
   fireLaser(x, y, r) {
     const laser = this.getFirstDead(true, x, y, 'laserGreen');
+    let ship = this.scene.ship
     if (laser) {
       laser.fire(x, y, r);
+      if (ship.spray) {
+        for(let i = 0; i <= 3; i++) {
+          const laser = this.getFirstDead(true, x, y, 'laserGreen');
+          laser.fire(x, y, r + angles[i]);
+        }
+      }
     }
   }
 }
@@ -235,15 +262,23 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
 
 function crash(player, asteroid){
   asteroid.destroy()
-  socket.emit('destroyAsteroid', asteroid.index, false)
-  player.disableBody(true, true);
-  socket.emit('disablePlayer', socket.id)
-  resetPlayer(player)
+  socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: false})
+  if (player.shieldLevel === 0) {
+    player.disableBody(true, true);
+    socket.emit('disablePlayer', socket.id)
+    resetPlayer(player)
+  } else {
+    player.shieldLevel -= 1;
+    let texture = player.shieldLevel === 0 ? 'ship' : 'ship_shield2'
+    player.setTexture(texture)
+    socket.emit('shieldUpdate', {socketId: player.playerId, shieldLevel: player.shieldLevel})
+  }
 }
 
 function resetPlayer(player) {
   setTimeout(() => {
     player.enableBody(true, player.body.x, player.body.y, true, true)
+    player.setTexture('ship')
     socket.emit('enablePlayer', socket.id)
     pauseCollider(player)
   }, 500)
@@ -264,9 +299,43 @@ function pauseCollider(player) {
 function destroyAsteroid(laser, asteroid) {
   asteroid.disableBody(true, true);
   if (laser.texture.key === 'laserGreen') {
-    socket.emit('destroyAsteroid', asteroid.index, true)
+    socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
   }
   laser.destroy()
+}
+
+function rateOfFirePowerup(ship, powerup) {
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
+  }
+}
+
+function sprayPowerup(ship, powerup) {
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
+  }
+}
+
+function shieldPowerup(ship, powerup) {
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
+  }
+}
+
+function updateShieldPowerUp(player){
+  if(player.shieldLevel === 2){
+    player.setTexture('ship_shield1')
+  } else if(player.shieldLevel === 1){
+    player.setTexture('ship_shield2')
+  } else{
+    player.setTexture('ship')
+  }
+}
+
+function speedPowerup(ship, powerup) {
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'star_powerup')
+  }
 }
 
 function clearStartScreen() {
@@ -347,6 +416,95 @@ function startSocketActions(self, allowedPlayersCount) {
       endGame(self)
     } else {
       timerDisplay.setText(getTimerDisplay(time));
+    }
+  })
+  self.socket.on('shieldUpdateOtherPlayers', function(data){
+    let socketId = data['socketId']
+    otherPlayer = self.otherPlayers[socketId]
+    otherPlayer.shieldLevel = data['shieldLevel']
+    updateShieldPowerUp(otherPlayer)
+  })
+  self.socket.on('updatePowerups', function(data){
+    let powerup = physics.add.sprite(data['x'], data['y'], data['type'], 0);
+    powerup.id = data['id']
+    if(data['type'] === 'shield_powerup'){
+      physics.add.overlap(self.ship, powerup, shieldPowerup);
+    } else if(data['type'] === 'silver_powerup'){
+      physics.add.overlap(self.ship, powerup, rateOfFirePowerup);
+    } else if(data['type'] === 'gold_powerup'){
+      physics.add.overlap(self.ship, powerup, sprayPowerup);
+    } else {
+      physics.add.overlap(self.ship, powerup, speedPowerup);
+    }
+    powerupHash[data['id']] = powerup
+  })
+  self.socket.on('shieldPowerUp', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy()
+    if(self.ship.playerId === data['playerId']){
+      self.ship.shieldLevel = 2;
+      self.ship.setTexture('ship_shield1')
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.shieldLevel = 2;
+      otherPlayer.setTexture('ship_shield1')
+    }
+  })
+  self.socket.on('silverPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    if(self.ship.playerId === data['playerId']){
+      self.ship.rateOfFire = true
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.rateOfFire = true;
+    }
+  })
+  self.socket.on('silverPowerupOff', function(data){
+    if(self.ship.playerId === data['playerId']){
+      self.ship.rateOfFire = false
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.rateOfFire = false;
+    }
+  })
+  self.socket.on('goldPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    if(self.ship.playerId === data['playerId']){
+      self.ship.spray = true
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.spray = true;
+    }
+  })
+  self.socket.on('goldPowerupOff', function(data){
+    console.log('data: ', data)
+    if(self.ship.playerId === data['playerId']){
+      self.ship.spray = false
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.spray = false;
+    }
+  })
+  self.socket.on('starPowerup', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    powerup.destroy();
+    if(self.ship.playerId === data['playerId']){
+      self.ship.speed += 600
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.speed += 600
+    }
+  })
+
+  self.socket.on('starPowerupOff', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    if(self.ship.playerId === data['playerId']){
+      self.ship.speed -= 600
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.speed -= 600
     }
   })
 }

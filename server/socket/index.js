@@ -1,7 +1,7 @@
 const { 
   createPlayer, 
   createAsteroids, 
-  roomTagGenerator,
+  tagGenerator,
   roomTagParser,
   currentRoom,
   redisSetter,
@@ -11,7 +11,7 @@ const { Game, Player } = require('../../models')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
-    const roomTag = roomTagParser(socket) || roomTagGenerator()
+    const roomTag = roomTagParser(socket) || tagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
     let games = await Game.findOrCreate({
       where: { roomTag: roomTag},
@@ -19,7 +19,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 60, 'intervalId': null})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300, 'intervalId': null, 'powerups': {}})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -86,22 +86,104 @@ module.exports = io => {
         data.owner_id = socket.id;
         socket.to(room).broadcast.emit('laserUpdate', laser, socket.id)
       })
-      socket.on('destroyAsteroid', async function(asteroidIndex, laser){
-
+      socket.on('destroyAsteroid', async function(data){
+        let laser = data['laser']
+        let asteroidIndex = data['asteroidIndex']
         redisGame = await redisGetter(room)
         if(laser && redisGame['asteroids'][asteroidIndex]){
           redisGame['players'][socket.id]['score'] += 10
         }
-          redisGame['asteroids'][asteroidIndex] = false
+        redisGame['asteroids'][asteroidIndex] = false
         redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
         io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: redisGame['players'][socket.id]['score']})
+
+        if(laser){
+          let powerupNum = Math.floor(Math.random() * 100)
+          if(powerupNum >= 60 && powerupNum < 70){
+            let powerupId = tagGenerator()
+            redisGame['powerups'][powerupId] = true
+            redisSetter(room, redisGame)
+            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'silver_powerup'})
+          } if(powerupNum >= 70 && powerupNum < 80){
+            let powerupId = tagGenerator()
+            redisGame['powerups'][powerupId] = true
+            redisSetter(room, redisGame)
+            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
+          } if(powerupNum >= 80 && powerupNum < 90){
+            let powerupId = tagGenerator()
+            redisGame['powerups'][powerupId] = true
+            redisSetter(room, redisGame)
+            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'star_powerup'})
+          } if (powerupNum > 90) {
+            let powerupId = tagGenerator()
+            redisGame['powerups'][powerupId] = true
+            redisSetter(room, redisGame)
+            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'shield_powerup'})
+          }
+        }
+
       });
       socket.on('disablePlayer', function(socketId){
         socket.to(room).broadcast.emit('disableOtherPlayer', socketId)
       })
       socket.on('enablePlayer', function(socketId){
         socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
+      })
+      socket.on('shieldUpdate', function(data){
+        socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
+      })
+      socket.on('destroyPowerup', async function(powerupId, type){
+        redisGame = await redisGetter(room)
+        if(redisGame['powerups'][powerupId]){
+          redisGame['powerups'][powerupId] = false
+          redisSetter(room, redisGame)
+          if(type === 'shield_powerup'){
+            io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
+          } else if(type === 'silver_powerup'){
+            io.sockets.in(room).emit('silverPowerup', {powerupId: powerupId, playerId: socket.id})
+            let timeoutObject = setTimeout(async function() {
+              let redisGame = await redisGetter(room)
+              let timeoutId = redisGame['players'][socket.id]['powerups']['rateOfFire'] 
+              if(timeoutId === this[Symbol.toPrimitive]()){
+                io.sockets.in(room).emit('silverPowerupOff', {playerId: socket.id})
+              }
+            }, 5000);
+            if(!redisGame['players'][socket.id]['powerups']){
+              redisGame['players'][socket.id]['powerups'] = {}
+            }
+            redisGame['players'][socket.id]['powerups']['rateOfFire'] = timeoutObject[Symbol.toPrimitive]()
+            redisSetter(room, redisGame)
+          } else if(type === 'gold_powerup'){
+            io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
+            let timeoutObject = setTimeout(async function() {
+              let redisGame = await redisGetter(room)
+              let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
+              if(timeoutId === this[Symbol.toPrimitive]()){
+                io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
+              }
+            }, 5000);
+            if(!redisGame['players'][socket.id]['powerups']){
+              redisGame['players'][socket.id]['powerups'] = {}
+            }
+            redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
+            redisSetter(room, redisGame)
+          } else {
+            io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
+            let timeoutObject = setTimeout(async function() {
+              let redisGame = await redisGetter(room)
+              let timeoutId = redisGame['players'][socket.id]['powerups']['speed'] 
+              if(timeoutId === this[Symbol.toPrimitive]()){
+                io.sockets.in(room).emit('starPowerupOff', {playerId: socket.id})
+              }
+            }, 5000);
+            if(!redisGame['players'][socket.id]['powerups']){
+              redisGame['players'][socket.id]['powerups'] = {}
+            } 
+            redisGame['players'][socket.id]['powerups']['speed'] = timeoutObject[Symbol.toPrimitive]()
+            redisSetter(room, redisGame)
+          }
+        }
       })
     }
   })

@@ -1,7 +1,7 @@
 module.exports = function() {
   asteroidArray = []
   asteroidHash = {}
-  for(let i = 0; i < 12; i++){
+  for(let i = 0; i < 32; i++){
     asteroidArray.push({
       x: Math.floor(Math.random() * 800),
       y: Math.floor(Math.random() * 600),
