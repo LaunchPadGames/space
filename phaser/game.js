@@ -254,7 +254,6 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true);
     this.setAngle(r)
     this.setScale(0.5)
-    console.log('this.scene: ', this.scene)
     this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
@@ -298,8 +297,6 @@ function pauseCollider(player) {
 
 
 function destroyAsteroid(laser, asteroid) {
-  console.log('asteroid: ', asteroid)
-  console.log('laser: ', laser)
   asteroid.disableBody(true, true);
   if (laser.texture.key === 'laserGreen') {
     socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
@@ -308,11 +305,9 @@ function destroyAsteroid(laser, asteroid) {
 }
 
 function rateOfFirePowerup(ship, powerup) {
-  rateOfFire -= 70;
-  setTimeout(function() {
-    rateOfFire += 70;
-  }, 20000)
-  powerup.destroy();
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
+  }
 }
 
 function sprayPowerup(ship, powerup) {
@@ -338,11 +333,9 @@ function updateShieldPowerUp(player){
 }
 
 function speedPowerup(ship, powerup) {
-  speed += 600
-  setTimeout(function() {
-    speed -= 600
-  }, 10000)
-  powerup.destroy();
+  if(powerup){
+    socket.emit('destroyPowerup', powerup.id, 'star_powerup')
+  }
 }
 
 function clearStartScreen() {
@@ -460,10 +453,20 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('silverPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
-    rateOfFire -= 70;
-    setTimeout(function() {
-      rateOfFire += 70;
-    }, 20000)
+    if(self.ship.playerId === data['playerId']){
+      self.ship.rateOfFire = true
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.rateOfFire = true;
+    }
+  })
+  self.socket.on('silverPowerupOff', function(data){
+    if(self.ship.playerId === data['playerId']){
+      self.ship.rateOfFire = false
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.rateOfFire = false;
+    }
   })
   self.socket.on('goldPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
@@ -476,6 +479,7 @@ function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('goldPowerupOff', function(data){
+    console.log('data: ', data)
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = false
     } else {
@@ -486,10 +490,22 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('starPowerup', function(data){
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
-    speed += 600
-    setTimeout(function() {
-      speed -= 600
-    }, 10000)
+    if(self.ship.playerId === data['playerId']){
+      self.ship.speed += 600
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.speed += 600
+    }
+  })
+
+  self.socket.on('starPowerupOff', function(data){
+    let powerup = powerupHash[data['powerupId']]
+    if(self.ship.playerId === data['playerId']){
+      self.ship.speed -= 600
+    } else {
+      otherPlayer = self.otherPlayers[data['playerId']]
+      otherPlayer.speed -= 600
+    }
   })
 }
 
