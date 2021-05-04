@@ -1,3 +1,5 @@
+import destroyAsteroid from '../util/destroyAsteroid.js'
+
 export default class Laser extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, sprite = 'laserGreen') {
     super(scene, x, y, sprite);
