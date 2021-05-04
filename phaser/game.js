@@ -1,3 +1,6 @@
+import Laser from './sprites/Laser.js'
+import LaserGroup from './sprites/LaserGroup.js'
+
 let canvasWidth = 1000;
 let canvasHeight = 800;
 
@@ -107,10 +110,10 @@ function create (){
 
   physics = self.physics
 
-  startBkgd = self.add.image(500, 400, 'space')
-  title = self.add.image(500, 200, 'title')
-  onePlayerOption = self.add.text(150, 570, 'Start 1 Player Game'.toUpperCase(), { fontSize: '32px' });
-  twoPlayerOption = self.add.text(150, 640, 'Start/Join 2 Player Game'.toUpperCase(), { fontSize: '32px' });
+  let startBkgd = self.add.image(500, 400, 'space')
+  let title = self.add.image(500, 200, 'title')
+  let onePlayerOption = self.add.text(150, 570, 'Start 1 Player Game'.toUpperCase(), { fontSize: '32px' });
+  let twoPlayerOption = self.add.text(150, 640, 'Start/Join 2 Player Game'.toUpperCase(), { fontSize: '32px' });
   selector = self.add.sprite(110, selectorYPos1, 'ship').setScale(0.65)
   startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
 
@@ -202,7 +205,7 @@ function addPlayer(self, playerInfo){
   ship.speed = 100
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
-  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  let overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
   overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
@@ -215,50 +218,50 @@ function addOtherPlayers(self, playerInfo){
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
 
-class LaserGroup extends Phaser.Physics.Arcade.Group
-{
-  constructor(scene) {
-    super(scene.physics.world, scene);
-    this.createMultiple({
-      classType: Laser,
-      frameQuantity: 30, // 30 instances of Laser
-      active: false,
-      visible: false,
-      key: 'laserGreen'
-    })
-  }
+// class LaserGroup extends Phaser.Physics.Arcade.Group
+// {
+//   constructor(scene) {
+//     super(scene.physics.world, scene);
+//     this.createMultiple({
+//       classType: Laser,
+//       frameQuantity: 30, // 30 instances of Laser
+//       active: false,
+//       visible: false,
+//       key: 'laserGreen'
+//     })
+//   }
 
-  fireLaser(x, y, r) {
-    const laser = this.getFirstDead(true, x, y, 'laserGreen');
-    let ship = this.scene.ship
-    if (laser) {
-      laser.fire(x, y, r);
-      if (ship.spray) {
-        for(let i = 0; i <= 3; i++) {
-          const laser = this.getFirstDead(true, x, y, 'laserGreen');
-          laser.fire(x, y, r + angles[i]);
-        }
-      }
-    }
-  }
-}
+//   fireLaser(x, y, r) {
+//     const laser = this.getFirstDead(true, x, y, 'laserGreen');
+//     let ship = this.scene.ship
+//     if (laser) {
+//       laser.fire(x, y, r);
+//       if (ship.spray) {
+//         for(let i = 0; i <= 3; i++) {
+//           const laser = this.getFirstDead(true, x, y, 'laserGreen');
+//           laser.fire(x, y, r + angles[i]);
+//         }
+//       }
+//     }
+//   }
+// }
 
-class Laser extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, sprite = 'laserGreen') {
-    super(scene, x, y, sprite);
-  }
+// class Laser extends Phaser.Physics.Arcade.Sprite {
+//   constructor(scene, x, y, sprite = 'laserGreen') {
+//     super(scene, x, y, sprite);
+//   }
 
-  fire(x, y, r, emit = true) {
-    this.body.reset(x, y);
-    this.setActive(true);
-    this.setVisible(true);
-    this.setAngle(r)
-    this.setScale(0.5)
-    this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
-    this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
-    if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
-  }
-}
+//   fire(x, y, r, emit = true) {
+//     this.body.reset(x, y);
+//     this.setActive(true);
+//     this.setVisible(true);
+//     this.setAngle(r)
+//     this.setScale(0.5)
+//     this.scene.physics.add.overlap(this, this.scene.asteroids, destroyAsteroid);
+//     this.scene.physics.velocityFromRotation(r, 400, this.body.velocity);
+//     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
+//   }
+// }
 
 function crash(player, asteroid){
   asteroid.destroy()
