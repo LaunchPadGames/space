@@ -14,9 +14,6 @@
     "dialect": "postgres"
   },
   "heroku_dev": {
-    "use_env_variable": "DATABASE_URL",
-    "ssl": {
-      "rejectUnauthorized": false
-    }
+    "use_env_variable": "DATABASE_URL"
   }
 }
