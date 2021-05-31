@@ -1,3 +1,4 @@
+import preload from './preload.js'
 let canvasWidth = 1000;
 let canvasHeight = 800;
 
@@ -52,35 +53,6 @@ let powerupHash = {}
 
 let game = new Phaser.Game(config);
 
-function preload (){
-  this.load.image('space', 'assets/start_bkgd.jpg')
-  this.load.image('title', 'assets/start_title.png')
-  this.load.spritesheet('asteroids', 'assets/asteroids.png', { frameWidth: 70, frameHeight: 65 })
-  this.load.image('asteroid0','assets/asteroid12.png')
-  this.load.image('asteroid1','assets/asteroid1.png')
-  this.load.image('asteroid2','assets/asteroid2.png')
-  this.load.image('asteroid3','assets/asteroid3.png')
-  this.load.image('asteroid4','assets/asteroid4.png')
-  this.load.image('asteroid5','assets/asteroid5.png')
-  this.load.image('asteroid6','assets/asteroid6.png')
-  this.load.image('asteroid7','assets/asteroid7.png')
-  this.load.image('asteroid8','assets/asteroid8.png')
-  this.load.image('asteroid9','assets/asteroid9.png')
-  this.load.image('asteroid10','assets/asteroid10.png')
-  this.load.image('asteroid11','assets/asteroid11.png')
-  this.load.spritesheet('ship', 'assets/ship.png', { frameWidth: 90, frameHeight: 90 })
-  this.load.image('laserGreen', 'assets/laserGreenR.png')
-  this.load.image('laserBlue', 'assets/laserBlueR.png')
-  this.load.image('shield1', 'assets/shield1.png')
-  this.load.image('shield2', 'assets/shield2.png')
-  this.load.image('shield_powerup', 'assets/shield_gold.png')
-  this.load.image('star_powerup', 'assets/star_gold.png')
-  this.load.image('gold_powerup', 'assets/bolt_gold.png')
-  this.load.image('silver_powerup', 'assets/bolt_silver.png')
-  this.load.image('ship_shield1', 'assets/ship_shield1.png')
-  this.load.image('ship_shield2', 'assets/ship_shield2.png')
-}
-
 function create (){
   let self = this;
   scene = this;
@@ -107,10 +79,10 @@ function create (){
 
   physics = self.physics
 
-  startBkgd = self.add.image(500, 400, 'space')
-  title = self.add.image(500, 200, 'title')
-  onePlayerOption = self.add.text(150, 570, 'Start 1 Player Game'.toUpperCase(), { fontSize: '32px' });
-  twoPlayerOption = self.add.text(150, 640, 'Start/Join 2 Player Game'.toUpperCase(), { fontSize: '32px' });
+  let startBkgd = self.add.image(500, 400, 'space')
+  let title = self.add.image(500, 200, 'title')
+  let onePlayerOption = self.add.text(150, 570, 'Start 1 Player Game'.toUpperCase(), { fontSize: '32px' });
+  let twoPlayerOption = self.add.text(150, 640, 'Start/Join 2 Player Game'.toUpperCase(), { fontSize: '32px' });
   selector = self.add.sprite(110, selectorYPos1, 'ship').setScale(0.65)
   startScreen = [startBkgd, title, onePlayerOption, twoPlayerOption, selector]
 
