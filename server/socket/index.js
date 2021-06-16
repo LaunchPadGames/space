@@ -141,9 +141,9 @@ module.exports = io => {
           redisSetter(room, redisGame)
           if(type === 'shield_powerup'){
             console.log('Shield Powerup')
-            console.log('room: ', room)
             io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
-          } else if(type === 'silver_powerup'){
+          } 
+          if(type === 'silver_powerup'){
             io.sockets.in(room).emit('silverPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
               let redisGame = await redisGetter(room)
@@ -157,7 +157,8 @@ module.exports = io => {
             }
             redisGame['players'][socket.id]['powerups']['rateOfFire'] = timeoutObject[Symbol.toPrimitive]()
             redisSetter(room, redisGame)
-          } else if(type === 'gold_powerup'){
+          } 
+          if(type === 'gold_powerup'){
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
               let redisGame = await redisGetter(room)
@@ -171,7 +172,8 @@ module.exports = io => {
             }
             redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
             redisSetter(room, redisGame)
-          } else {
+          } 
+          if(type === 'star_powerup'){
             io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
               let redisGame = await redisGetter(room)
