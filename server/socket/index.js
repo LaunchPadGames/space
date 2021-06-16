@@ -100,22 +100,23 @@ module.exports = io => {
 
         if(laser){
           let powerupNum = Math.floor(Math.random() * 100)
-          if(powerupNum >= 60 && powerupNum < 70){
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'silver_powerup'})
-          } if(powerupNum >= 70 && powerupNum < 80){
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
-          } if(powerupNum >= 80 && powerupNum < 90){
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'star_powerup'})
-          } if (powerupNum > 90) {
+          // if(powerupNum >= 60 && powerupNum < 70){
+          //   let powerupId = tagGenerator()
+          //   redisGame['powerups'][powerupId] = true
+          //   redisSetter(room, redisGame)
+          //   io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'silver_powerup'})
+          // } if(powerupNum >= 70 && powerupNum < 80){
+          //   let powerupId = tagGenerator()
+          //   redisGame['powerups'][powerupId] = true
+          //   redisSetter(room, redisGame)
+          //   io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
+          // } if(powerupNum >= 80 && powerupNum < 90){
+          //   let powerupId = tagGenerator()
+          //   redisGame['powerups'][powerupId] = true
+          //   redisSetter(room, redisGame)
+          //   io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'star_powerup'})
+          // } 
+          if (powerupNum >= 60) {
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)
@@ -140,6 +141,8 @@ module.exports = io => {
           redisGame['powerups'][powerupId] = false
           redisSetter(room, redisGame)
           if(type === 'shield_powerup'){
+            console.log('Shield Powerup')
+            console.log('room: ', room)
             io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
           } else if(type === 'silver_powerup'){
             io.sockets.in(room).emit('silverPowerup', {powerupId: powerupId, playerId: socket.id})

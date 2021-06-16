@@ -322,6 +322,7 @@ function shieldPowerup(ship, powerup) {
   if(powerup){
     console.log('shieldPowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
+    powerup.destroy()
   }
 }
 
@@ -444,11 +445,11 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('shieldPowerUp', function(data){
     console.log('shieldPowerUp listener')
     let powerup = powerupHash[data['powerupId']]
-    powerup.destroy()
     if(self.ship.playerId === data['playerId']){
       self.ship.shieldLevel = 2;
       self.ship.setTexture('ship_shield1')
     } else {
+      powerup.destroy()
       otherPlayer = self.otherPlayers[data['playerId']]
       otherPlayer.shieldLevel = 2;
       otherPlayer.setTexture('ship_shield1')
