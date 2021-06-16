@@ -135,6 +135,7 @@ module.exports = io => {
       })
       socket.on('destroyPowerup', async function(powerupId, type){
         redisGame = await redisGetter(room)
+        console.log('Powerup Type: ', type)
         if(redisGame['powerups'][powerupId]){
           redisGame['powerups'][powerupId] = false
           redisSetter(room, redisGame)

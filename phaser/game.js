@@ -306,18 +306,21 @@ function destroyAsteroid(laser, asteroid) {
 
 function rateOfFirePowerup(ship, powerup) {
   if(powerup){
+    console.log('rateOfFirePowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
   }
 }
 
 function sprayPowerup(ship, powerup) {
   if(powerup){
+    console.log('sprayPowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
   }
 }
 
 function shieldPowerup(ship, powerup) {
   if(powerup){
+    console.log('shieldPowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
   }
 }
@@ -439,6 +442,7 @@ function startSocketActions(self, allowedPlayersCount) {
     powerupHash[data['id']] = powerup
   })
   self.socket.on('shieldPowerUp', function(data){
+    console.log('shieldPowerUp listener')
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy()
     if(self.ship.playerId === data['playerId']){
@@ -451,6 +455,7 @@ function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('silverPowerup', function(data){
+    console.log('rateOfFire listener')
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
     if(self.ship.playerId === data['playerId']){
@@ -469,6 +474,7 @@ function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('goldPowerup', function(data){
+    console.log('Spray listener')
     let powerup = powerupHash[data['powerupId']]
     powerup.destroy();
     if(self.ship.playerId === data['playerId']){
