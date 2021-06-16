@@ -308,6 +308,7 @@ function rateOfFirePowerup(ship, powerup) {
   if(powerup){
     console.log('rateOfFirePowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
+    powerup.destroy()
   }
 }
 
@@ -315,6 +316,7 @@ function sprayPowerup(ship, powerup) {
   if(powerup){
     console.log('sprayPowerup emitter')
     socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
+    powerup.destroy()
   }
 }
 
@@ -338,7 +340,9 @@ function updateShieldPowerUp(player){
 
 function speedPowerup(ship, powerup) {
   if(powerup){
+    console.log('speed emitter')
     socket.emit('destroyPowerup', powerup.id, 'star_powerup')
+    powerup.destroy()
   }
 }
 
@@ -458,10 +462,10 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('silverPowerup', function(data){
     console.log('rateOfFire listener')
     let powerup = powerupHash[data['powerupId']]
-    powerup.destroy();
     if(self.ship.playerId === data['playerId']){
       self.ship.rateOfFire = true
     } else {
+      powerup.destroy();
       otherPlayer = self.otherPlayers[data['playerId']]
       otherPlayer.rateOfFire = true;
     }
@@ -477,16 +481,15 @@ function startSocketActions(self, allowedPlayersCount) {
   self.socket.on('goldPowerup', function(data){
     console.log('Spray listener')
     let powerup = powerupHash[data['powerupId']]
-    powerup.destroy();
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true
     } else {
+      powerup.destroy();
       otherPlayer = self.otherPlayers[data['playerId']]
       otherPlayer.spray = true;
     }
   })
   self.socket.on('goldPowerupOff', function(data){
-    console.log('data: ', data)
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = false
     } else {
@@ -495,11 +498,12 @@ function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('starPowerup', function(data){
+    console.log('speed listener')
     let powerup = powerupHash[data['powerupId']]
-    powerup.destroy();
     if(self.ship.playerId === data['playerId']){
       self.ship.speed += 600
     } else {
+      powerup.destroy();
       otherPlayer = self.otherPlayers[data['playerId']]
       otherPlayer.speed += 600
     }
