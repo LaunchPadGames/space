@@ -100,21 +100,11 @@ module.exports = io => {
 
         if(laser){
           let powerupNum = Math.floor(Math.random() * 100)
-          if(powerupNum >= 60 && powerupNum < 70){
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'silver_powerup'})
-          } if(powerupNum >= 70 && powerupNum < 80){
+           if(powerupNum >= 80 && powerupNum < 90){
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)
             io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
-          } if(powerupNum >= 80 && powerupNum < 90){
-            let powerupId = tagGenerator()
-            redisGame['powerups'][powerupId] = true
-            redisSetter(room, redisGame)
-            io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'star_powerup'})
           } if (powerupNum > 90) {
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
@@ -185,6 +175,7 @@ module.exports = io => {
             if(!redisGame['players'][socket.id]['powerups']){
               redisGame['players'][socket.id]['powerups'] = {}
             } 
+            console.log('type before speed bug: ', type)
             redisGame['players'][socket.id]['powerups']['speed'] = timeoutObject[Symbol.toPrimitive]()
             redisSetter(room, redisGame)
           }
