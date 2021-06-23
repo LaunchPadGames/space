@@ -366,8 +366,8 @@ function startSocketActions(self, allowedPlayersCount) {
       }
     });
   });
-  self.socket.on('waitingForPlayers', ({ roomTag, time }) => {
-    displayWaitScreen(self, roomTag, time)
+  self.socket.on('waitingForPlayers', (gameData) => {
+    displayWaitScreen(self, gameData)
   })
   self.socket.on('newPlayer', function(playerInfo){
     addOtherPlayers(self, playerInfo)
@@ -553,8 +553,8 @@ function getTimerDisplay(time) {
   return minutes + ':' + seconds
 }
 
-function displayWaitScreen(self, roomTag, time) {
-  timerDisplay.setText(getTimerDisplay(time));
+function displayWaitScreen(self, gameData) {
+  timerDisplay.setText(getTimerDisplay(gameData['time']));
   waitingText = self.add.text(500, 300, 'Waiting for other player to join...'.toUpperCase(), { fontSize: '32px' })
   roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this url:', { fontSize: '28px' })
   // roomTagText = self.add.text(500, 470, 'http://localhost:3000?room_tag=' + roomTag, { fontSize: '20px' })
@@ -562,7 +562,7 @@ function displayWaitScreen(self, roomTag, time) {
   roomTagInstructionsText.setOrigin(0.5)
   // roomTagText.setOrigin(0.5)
   roomTagText = document.createElement("P")
-  roomTagText.innerText = 'http://localhost:3000?room_tag=' + roomTag
+  roomTagText.innerText = gameData['baseUrl'] + '?room_tag=' + gameData['roomTag']
   roomTagText.classList.add("room-tag")
   let canvas = document.getElementsByTagName('canvas')[0]
   document.body.appendChild(roomTagText)
