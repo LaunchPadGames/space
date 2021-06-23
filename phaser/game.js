@@ -557,10 +557,8 @@ function displayWaitScreen(self, gameData) {
   timerDisplay.setText(getTimerDisplay(gameData['time']));
   waitingText = self.add.text(500, 300, 'Waiting for other player to join...'.toUpperCase(), { fontSize: '32px' })
   roomTagInstructionsText = self.add.text(500, 420, 'Send the other player this url:', { fontSize: '28px' })
-  // roomTagText = self.add.text(500, 470, 'http://localhost:3000?room_tag=' + roomTag, { fontSize: '20px' })
   waitingText.setOrigin(0.5)
   roomTagInstructionsText.setOrigin(0.5)
-  // roomTagText.setOrigin(0.5)
   roomTagText = document.createElement("P")
   roomTagText.innerText = gameData['baseUrl'] + '?room_tag=' + gameData['roomTag']
   roomTagText.classList.add("room-tag")
