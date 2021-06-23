@@ -5,6 +5,7 @@ const roomTagParser = require('./roomTagParser')
 const currentRoom = require('./currentRoom')
 const redisGetter = require('./redisGetter')
 const redisSetter = require('./redisSetter')
+const createGameAndPlayers = require('./createGameAndPlayers')
 
 module.exports = {
   createPlayer,
@@ -13,5 +14,6 @@ module.exports = {
   roomTagParser,
   currentRoom,
   redisGetter,
-  redisSetter
+  redisSetter,
+  createGameAndPlayers
 }
