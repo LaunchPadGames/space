@@ -21,9 +21,9 @@ module.exports = io => {
       socket.emit('inProgress');
     } else {
       // Method 2
+      await setupUserGameEnvironment(io, socket, roomTag)
       console.log('a user connected');
       const room = currentRoom(io, socket)
-      console.log('ROOM!!!!!!!!!!!!!!!!!!!!!!!: ', room)
       let redisGame = await redisGetter(roomTag)
       redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
       await redisSetter(roomTag, redisGame)
