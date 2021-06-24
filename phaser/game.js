@@ -571,6 +571,5 @@ function clearWaitScreen() {
     waitingText.destroy()
     roomTagInstructionsText.destroy()
     roomTagText.parentNode.removeChild(roomTagText)
-    // roomTagText.destroy()
   }
 }

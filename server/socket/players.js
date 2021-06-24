@@ -3,13 +3,13 @@ const {
   redisGetter 
 } = require('../util');
 
-module.exports = (socket, room) => {
+module.exports = (socket, room, roomTag) => {
   socket.on('playerMovement', async function(movementData){
-    redisGame = await redisGetter(room)
+    redisGame = await redisGetter(roomTag)
     redisGame['players'][socket.id].x = movementData.x
     redisGame['players'][socket.id].y = movementData.y
     redisGame['players'][socket.id].rotation = movementData.rotation
-    redisSetter(room, redisGame)
+    redisSetter(roomTag, redisGame)
     socket.to(room).broadcast.emit('playerMoved', redisGame['players'][socket.id])
   })
 

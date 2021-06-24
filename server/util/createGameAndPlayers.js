@@ -19,5 +19,5 @@ module.exports = async function(roomTag, allowedPlayersCount, socket) {
   })
   const playerLimit = game.dataValues.playerLimit
 
-  return [currentPlayersCount, playerLimit]
+  return { currentPlayersCount: currentPlayersCount, playerLimit: playerLimit }
 }

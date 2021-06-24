@@ -1,8 +1,8 @@
 const { redisSetter, redisGetter } = require('../util');
 
-module.exports = (socket, room) => {
+module.exports = (socket, room, roomTag) => {
   socket.on('laserShot', async function(data) {
-    redisGame = await redisGetter(room)
+    redisGame = await redisGetter(roomTag)
     if (redisGame['players'][socket.id] == null) return;
     let laser = data;
     data.owner_id = socket.id;
