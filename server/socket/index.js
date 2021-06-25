@@ -6,24 +6,35 @@ const {
   currentRoom,
   redisSetter,
   redisGetter,
-  createGameAndPlayers
 } = require('../util');
+const { CreateGame, CreatePlayer } = require('../services')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
+    console.log('a user connected');
     const roomTag = roomTagParser(socket) || tagGenerator()
     const allowedPlayersCount = parseInt(socket.handshake.query.allowedPlayersCount)
-    let playerData = await createGameAndPlayers(roomTag, allowedPlayersCount, socket)
-    let currentPlayersCount = playerData['currentPlayersCount']
-    let playerLimit = playerData['playerLimit']
+    console.log('CreateGame: ', CreateGame)
+    let createGame = new CreateGame(roomTag, allowedPlayersCount)
+    let game = await createGame.run()
+    let createPlayer = new CreatePlayer(roomTag, game, socket)
+    await createPlayer.run()
+    const currentPlayersCount = await createPlayer.playersCount()
+
+    const room = currentRoom(io, socket)
+    socket.join(room)
+    require('./players')(socket, room, roomTag)
+
+    require('./lasers')(socket, room, roomTag)
+    require('./asteroids')(io, socket, room, roomTag)
+
+    require('./powerUps')(io, socket, room, roomTag)
     
-    if (currentPlayersCount > playerLimit) {
+    if (currentPlayersCount > game.dataValues.playerLimit) {
       socket.emit('inProgress');
     } else {
       // Method 2
-      await setupUserGameEnvironment(io, socket, roomTag)
-      console.log('a user connected');
-      const room = currentRoom(io, socket)
+      await setupUserGameEnvironment(io, socket, roomTag, room)
       let redisGame = await redisGetter(roomTag)
       redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
       await redisSetter(roomTag, redisGame)
@@ -53,21 +64,6 @@ module.exports = io => {
         redisSetter(roomTag, redisGame)
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
-      socket.on('disconnect', async function () {
-        console.log('user disconnected');
-        // remove this player from our players object
-        redisGame = await redisGetter(roomTag)
-        delete redisGame['players'][socket.id]
-        redisSetter(roomTag, redisGame)
-        // emit a message to all players to remove this player
-        io.sockets.in(room).emit('disconnect', socket.id);
-      });
-      require('./players')(socket, room, roomTag)
-
-      require('./lasers')(socket, room, roomTag)
-      require('./asteroids')(io, socket, room, roomTag)
-
-      require('./powerUps')(io, socket, room, roomTag)
       // Method 2
     }
   })

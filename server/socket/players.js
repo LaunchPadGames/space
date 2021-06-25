@@ -19,4 +19,14 @@ module.exports = (socket, room, roomTag) => {
   socket.on('enablePlayer', function(socketId){
     socket.to(room).broadcast.emit('enableOtherPlayer', socketId)
   })
+
+  socket.on('disconnect', async function () {
+    console.log('user disconnected');
+    // remove this player from our players object
+    redisGame = await redisGetter(roomTag)
+    delete redisGame['players'][socket.id]
+    redisSetter(roomTag, redisGame)
+    // emit a message to all players to remove this player
+    io.sockets.in(room).emit('disconnect', socket.id);
+  });
 }
