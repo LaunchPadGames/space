@@ -154,8 +154,13 @@ module.exports = io => {
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
               let redisGame = await redisGetter(room)
+              console.log('redisGame: ', redisGame)
               let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
+              console.log('timeoutId: ', timeoutId)
+              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
               if(timeoutId === this[Symbol.toPrimitive]()){
+                console.log('room: ', room)
+                console.log('socket.id: ', socket.id)
                 io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
               }
             }, 5000);
