@@ -102,7 +102,7 @@ module.exports = io => {
 
         if(laser){
           let powerupNum = Math.floor(Math.random() * 100)
-           if(powerupNum >= 80 && powerupNum < 90){
+           if(powerupNum < 90){
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)
@@ -153,7 +153,12 @@ module.exports = io => {
           if(type === 'gold_powerup'){
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
-              console.log('here')
+              // Bug has been found
+              // related to how you wanted to try and stack powerups on each other
+              // You originally were thinking that the setTimeout would only send the
+              // websocket message if the current timeoutId matched the one in Redis
+              // Problem is that there sometimes the most recent id doesn't alway get set properly.
+              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
               let redisGame = await redisGetter(room)
               console.log('powerups: ', redisGame['players'][socket.id]['powerups'])
               let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
