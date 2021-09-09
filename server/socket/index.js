@@ -152,27 +152,27 @@ module.exports = io => {
           } 
           if(type === 'gold_powerup'){
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
-            let timeoutObject = setTimeout(async function() {
-              // Bug has been found
-              // related to how you wanted to try and stack powerups on each other
-              // You originally were thinking that the setTimeout would only send the
-              // websocket message if the current timeoutId matched the one in Redis
-              // Problem is that there sometimes the most recent id doesn't alway get set properly.
-              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
-              let redisGame = await redisGetter(room)
-              console.log('powerups: ', redisGame['players'][socket.id]['powerups'])
-              let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
-              console.log('timeoutId: ', timeoutId)
-              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
-              if(timeoutId === this[Symbol.toPrimitive]()){
-                io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
-              }
-            }, 5000);
-            if(!redisGame['players'][socket.id]['powerups']){
-              redisGame['players'][socket.id]['powerups'] = {}
-            }
-            redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
-            redisSetter(room, redisGame)
+            // setTimeout(async function() {
+            //   // Bug has been found
+            //   // related to how you wanted to try and stack powerups on each other
+            //   // You originally were thinking that the setTimeout would only send the
+            //   // websocket message if the current timeoutId matched the one in Redis
+            //   // Problem is that there sometimes the most recent id doesn't alway get set properly.
+            //   console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
+            //   let redisGame = await redisGetter(room)
+            //   console.log('powerups: ', redisGame['players'][socket.id]['powerups'])
+            //   let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
+            //   console.log('timeoutId: ', timeoutId)
+            //   console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
+            //   if(timeoutId === this[Symbol.toPrimitive]()){
+            //     io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
+            //   }
+            // }, 5000);
+            // if(!redisGame['players'][socket.id]['powerups']){
+            //   redisGame['players'][socket.id]['powerups'] = {}
+            // }
+            // redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
+            // redisSetter(room, redisGame)
           } 
           if(type === 'star_powerup'){
             io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
