@@ -5,7 +5,8 @@ const {
   roomTagParser,
   currentRoom,
   redisSetter,
-  redisGetter
+  redisGetter,
+  sprayQueue
 } = require('../util');
 const { Game, Player } = require('../../models')
 
@@ -151,7 +152,10 @@ module.exports = io => {
             redisSetter(room, redisGame)
           } 
           if(type === 'gold_powerup'){
-            io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
+            console.log('sprayQueue: ', sprayQueue)
+            sprayQueue(io, room, socket, powerupId)
+            console.log('Added to Queue')
+            // io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
             // setTimeout(async function() {
             //   // Bug has been found
             //   // related to how you wanted to try and stack powerups on each other
