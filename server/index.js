@@ -6,7 +6,7 @@ const server = require('http').Server(app)
 const io = require('socket.io').listen(server)
 const port = process.env.PORT || 3000
 
-app.use('/', express.static('phaser/index.html'));
+app.use('/', express.static('phaser'));
 
 require('./socket')(io);
 
