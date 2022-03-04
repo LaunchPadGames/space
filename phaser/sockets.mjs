@@ -1,5 +1,6 @@
 import {addPlayer, addOtherPlayers} from './players.mjs'
 import endGame from './endGame.mjs'
+import Laser from './laser.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });

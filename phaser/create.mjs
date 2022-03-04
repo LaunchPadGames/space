@@ -1,4 +1,5 @@
-import LaserGroup from './laser.mjs'
+import LaserGroup from './LaserGroup.mjs'
+import {getTimerDisplay} from './displays.mjs'
 
 export default function create (){
   this.asteroidArray = []
@@ -8,25 +9,25 @@ export default function create (){
   this.scoreText = this.add.text(5, 5, 'Your Score: 0')
   this.scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
 
-this.score = 0;
-this.scoreOther = 0;
-this.lastFired = 100;
-this.rateOfFire = 200;
-this.spray = false;
-this.angles = [-0.4, -0.2, 0.2, 0.4]
-this.speed = 100
-this.powerupHash = {}
+  this.score = 0;
+  this.scoreOther = 0;
+  this.lastFired = 100;
+  this.rateOfFire = 200;
+  this.spray = false;
+  this.angles = [-0.4, -0.2, 0.2, 0.4]
+  this.speed = 100
+  this.powerupHash = {}
 
   // Timer
   this.timerDisplay = this.add.text(500, 15, getTimerDisplay(0))
   this.timerDisplay.setOrigin(0.5)
 
   this.hiddenTimeStamp = 0;
-  game.events.on('hidden', () => {
+  this.events.on('hidden', () => {
     this.hiddenTimeStamp = performance.now();
   });
 
-  game.events.on('visible', () => {
+  this.events.on('visible', () => {
     let elapsedTime = Math.floor((performance.now() - this.hiddenTimeStamp)/1000); //seconds
     this.initialTime -= elapsedTime;
   })
