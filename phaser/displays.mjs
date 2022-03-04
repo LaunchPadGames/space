@@ -3,8 +3,8 @@ function clearStartScreen(self) {
 }
 
 function updateScoreText(self) {
-  self.scoreText.setText('Your Score: ' + score);
-  self.scoreTextOther.setText('Opponent Score: ' + scoreOther);
+  self.scoreText.setText('Your Score: ' + self.score);
+  self.scoreTextOther.setText('Opponent Score: ' + self.scoreOther);
 }
 
 function getTimerDisplay(time) {

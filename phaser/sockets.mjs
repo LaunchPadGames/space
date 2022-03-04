@@ -2,7 +2,7 @@ import {addPlayer, addOtherPlayers} from './players.mjs'
 import endGame from './endGame.mjs'
 import Laser from './laser.mjs'
 import {clearWaitScreen, getTimerDisplay, updateScoreText, displayWaitScreen, clearStartScreen} from './displays.mjs'
-import {rateOfFirePowerup, sprayPowerup, shieldPowerup, updateShieldPowerUp, speedPowerup} from '.powerUps.mjs'
+import {rateOfFirePowerup, sprayPowerup, shieldPowerup, updateShieldPowerUp, speedPowerup} from './powerUps.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
