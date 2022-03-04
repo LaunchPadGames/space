@@ -55,18 +55,3 @@ var config = {
 // // let powerupHash = {}
 
 let game = new Phaser.Game(config)
-
-// function endGame(self) {
-//   hasGameStarted = false
-//   self.ship.destroy()
-//   Object.values(self.otherPlayers).forEach((player) => player.destroy())
-//   timerDisplay.destroy()
-//   let gameOverText = self.add.text(500, 300, 'Times Up:'.toUpperCase(), { fontSize: '32px' })
-//   let outcomeText = self.add.text(500, 340, getOutcome().toUpperCase(), { fontSize: '32px' })
-//   gameOverText.setOrigin(0.5)
-//   outcomeText.setOrigin(0.5)
-//   scoreText.setOrigin(0.5)
-//   scoreText.setPosition(500, 400)
-//   scoreTextOther.setOrigin(0.5)
-//   scoreTextOther.setPosition(500, 420)
-// }

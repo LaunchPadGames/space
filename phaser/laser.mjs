@@ -1,3 +1,5 @@
+import {destroyAsteroid} from './asteroid.mjs'
+
 class LaserGroup extends Phaser.Physics.Arcade.Group
 {
   constructor(scene) {
@@ -42,3 +44,5 @@ class Laser extends Phaser.Physics.Arcade.Sprite {
     if (emit && this.scene.socket) this.scene.socket.emit('laserShot', { x: x, y: y, rotation: r })
   }
 }
+
+export {LaserGroup, Laser}

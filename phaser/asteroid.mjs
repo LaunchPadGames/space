@@ -1,5 +1,8 @@
+import { resetPlayer } from './players.mjs'
+
 function crash(player, asteroid){
   asteroid.destroy()
+  let socket = self.socket
   socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: false})
   if (player.shieldLevel === 0) {
     player.disableBody(true, true);
@@ -32,3 +35,5 @@ function destroyAsteroid(laser, asteroid) {
   }
   laser.destroy()
 }
+
+export {crash, pauseCollider, destroyAsteroid}

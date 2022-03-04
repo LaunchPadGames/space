@@ -1,6 +1,9 @@
-function startSocketActions(self, allowedPlayersCount) {
+import {addPlayer, addOtherPlayers} from './players.mjs'
+import endGame from './endGame.mjs'
+
+export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
-  socket = self.socket;
+  console.log('socket: ', self.socket)
   self.socket.on('inProgress', function () {
     clearStartScreen()
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })
@@ -37,8 +40,8 @@ function startSocketActions(self, allowedPlayersCount) {
       phaserAsteroid.setVelocity(asteroid.xVel, asteroid.yVel)
     })
     // start game
-    clearWaitScreen()
-    hasGameStarted = true
+    clearWaitScreen(self)
+    self.hasGameStarted = true
   })
   self.socket.on('laserUpdate', function(laser, owner) {
     let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
@@ -65,13 +68,13 @@ function startSocketActions(self, allowedPlayersCount) {
     } else {
       scoreOther = newScore
     }
-    updateScoreText()
+    updateScoreText(self)
   })
   self.socket.on('updateTimer', function(time){
     if (time <= 0) {
       endGame(self)
     } else {
-      timerDisplay.setText(getTimerDisplay(time));
+      self.timerDisplay.setText(getTimerDisplay(time));
     }
   })
   self.socket.on('shieldUpdateOtherPlayers', function(data){

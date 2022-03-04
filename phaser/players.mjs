@@ -1,3 +1,5 @@
+import {pauseCollider, crash} from './asteroid.mjs'
+
 function addPlayer(self, playerInfo){
   const ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship', 0);
   ship.primary = playerInfo.primary
@@ -8,7 +10,7 @@ function addPlayer(self, playerInfo){
   ship.speed = 100
   self.asteroids = self.physics.add.group();
   asteroids = self.asteroids
-  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, this)
+  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, self)
   overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
@@ -30,3 +32,4 @@ function resetPlayer(player) {
   }, 500)
 }
 
+export {addPlayer, addOtherPlayers, resetPlayer}
