@@ -40,7 +40,7 @@ export default function update(time) {
 
       if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
         this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
-        lastFired = time;
+        this.lastFired = time;
       }
 
       if (this.ship.x < 0) this.ship.x = canvasWidth

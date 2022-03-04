@@ -8,6 +8,15 @@ export default function create (){
   this.scoreText = this.add.text(5, 5, 'Your Score: 0')
   this.scoreTextOther = this.add.text(5, 20, 'Opponent Score: 0')
 
+this.score = 0;
+this.scoreOther = 0;
+this.lastFired = 100;
+this.rateOfFire = 200;
+this.spray = false;
+this.angles = [-0.4, -0.2, 0.2, 0.4]
+this.speed = 100
+this.powerupHash = {}
+
   // Timer
   this.timerDisplay = this.add.text(500, 15, getTimerDisplay(0))
   this.timerDisplay.setOrigin(0.5)

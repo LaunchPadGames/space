@@ -95,11 +95,11 @@ export default function startSocketActions(self, allowedPlayersCount) {
     } else {
       physics.add.overlap(self.ship, powerup, speedPowerup);
     }
-    powerupHash[data['id']] = powerup
+    this.powerupHash[data['id']] = powerup
   })
   self.socket.on('shieldPowerUp', function(data){
     console.log('shieldPowerUp listener')
-    let powerup = powerupHash[data['powerupId']]
+    let powerup = this.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.shieldLevel = 2;
       self.ship.setTexture('ship_shield1')
@@ -112,7 +112,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('silverPowerup', function(data){
     console.log('rateOfFire listener')
-    let powerup = powerupHash[data['powerupId']]
+    let powerup = this.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.rateOfFire = true
     } else {
@@ -131,7 +131,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('goldPowerup', function(data){
     console.log('Spray listener')
-    let powerup = powerupHash[data['powerupId']]
+    let powerup = this.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true
     } else {
@@ -150,7 +150,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('starPowerup', function(data){
     console.log('speed listener')
-    let powerup = powerupHash[data['powerupId']]
+    let powerup = this.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.speed += 600
     } else {
@@ -161,7 +161,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
 
   self.socket.on('starPowerupOff', function(data){
-    let powerup = powerupHash[data['powerupId']]
+    let powerup = this.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.speed -= 600
     } else {
