@@ -9,9 +9,8 @@ function addPlayer(self, playerInfo){
   ship.rateOfFire = 200
   ship.speed = 100
   self.asteroids = self.physics.add.group();
-  asteroids = self.asteroids
-  overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, self)
-  overlap.name = self.socket.id
+  self.overlap = self.physics.add.overlap(ship, self.asteroids, crash, null, self)
+  self.overlap.name = self.socket.id
   ship.setMaxVelocity(150, 150)
   self.ship = ship
 }

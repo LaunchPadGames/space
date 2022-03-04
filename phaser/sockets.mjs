@@ -1,10 +1,10 @@
 import {addPlayer, addOtherPlayers} from './players.mjs'
 import endGame from './endGame.mjs'
 import Laser from './laser.mjs'
+import {clearWaitScreen, getTimerDisplay} from './displays.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
-  console.log('socket: ', self.socket)
   self.socket.on('inProgress', function () {
     clearStartScreen()
     self.add.text(225, 400, 'Game In Progress. Go Away.'.toUpperCase(), { fontSize: '32px' })

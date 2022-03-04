@@ -38,7 +38,7 @@ export default function update(time) {
         this.ship.setAngularVelocity(0);
       }
 
-      if (this.cursors.space.isDown && time > lastFired + 200 && this.ship.body.enable) {
+      if (this.cursors.space.isDown && time > this.lastFired + 200 && this.ship.body.enable) {
         this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
         this.lastFired = time;
       }

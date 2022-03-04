@@ -28,7 +28,7 @@ function displayWaitScreen(self, gameData) {
 }
 
 function clearWaitScreen(self) {
-  if (waitingText) {
+  if (self.waitingText) {
     self.waitingText.destroy()
     self.roomTagInstructionsText.destroy()
     self.roomTagText.parentNode.removeChild(roomTagText)
