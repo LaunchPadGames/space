@@ -1,7 +1,8 @@
 import {addPlayer, addOtherPlayers} from './players.mjs'
 import endGame from './endGame.mjs'
 import Laser from './laser.mjs'
-import {clearWaitScreen, getTimerDisplay, updateScoreText} from './displays.mjs'
+import {clearWaitScreen, getTimerDisplay, updateScoreText, displayWaitScreen, clearStartScreen} from './displays.mjs'
+import {rateOfFirePowerup, sprayPowerup, shieldPowerup, updateShieldPowerUp, speedPowerup} from '.powerUps.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
@@ -106,9 +107,9 @@ export default function startSocketActions(self, allowedPlayersCount) {
       self.ship.setTexture('ship_shield1')
     } else {
       powerup.destroy()
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.shieldLevel = 2;
-      otherPlayer.setTexture('ship_shield1')
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.shieldLevel = 2;
+      self.otherPlayer.setTexture('ship_shield1')
     }
   })
   self.socket.on('silverPowerup', function(data){
@@ -118,16 +119,16 @@ export default function startSocketActions(self, allowedPlayersCount) {
       self.ship.rateOfFire = true
     } else {
       powerup.destroy();
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.rateOfFire = true;
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.rateOfFire = true;
     }
   })
   self.socket.on('silverPowerupOff', function(data){
     if(self.ship.playerId === data['playerId']){
       self.ship.rateOfFire = false
     } else {
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.rateOfFire = false;
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.rateOfFire = false;
     }
   })
   self.socket.on('goldPowerup', function(data){
@@ -137,16 +138,16 @@ export default function startSocketActions(self, allowedPlayersCount) {
       self.ship.spray = true
     } else {
       powerup.destroy();
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.spray = true;
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.spray = true;
     }
   })
   self.socket.on('goldPowerupOff', function(data){
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = false
     } else {
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.spray = false;
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.spray = false;
     }
   })
   self.socket.on('starPowerup', function(data){
@@ -156,8 +157,8 @@ export default function startSocketActions(self, allowedPlayersCount) {
       self.ship.speed += 600
     } else {
       powerup.destroy();
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.speed += 600
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.speed += 600
     }
   })
 
@@ -166,8 +167,8 @@ export default function startSocketActions(self, allowedPlayersCount) {
     if(self.ship.playerId === data['playerId']){
       self.ship.speed -= 600
     } else {
-      otherPlayer = self.otherPlayers[data['playerId']]
-      otherPlayer.speed -= 600
+      self.otherPlayer = self.otherPlayers[data['playerId']]
+      self.otherPlayer.speed -= 600
     }
   })
 }

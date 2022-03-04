@@ -39,3 +39,5 @@ function speedPowerup(ship, powerup) {
     powerup.destroy()
   }
 }
+
+export {rateOfFirePowerup, sprayPowerup, shieldPowerup, updateShieldPowerUp, speedPowerup}
