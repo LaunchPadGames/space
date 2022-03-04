@@ -1,3 +1,5 @@
+import { getOutcome } from "./displays.mjs"
+
 export default function endGame(self) {
   self.hasGameStarted = false
   self.ship.destroy()

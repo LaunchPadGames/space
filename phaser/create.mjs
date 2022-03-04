@@ -17,6 +17,8 @@ export default function create (){
   this.angles = [-0.4, -0.2, 0.2, 0.4]
   this.speed = 100
   this.powerupHash = {}
+  this.canvasWidth = 1000
+  this.canvasHeight = 800
 
   // Timer
   this.timerDisplay = this.add.text(500, 15, getTimerDisplay(0))

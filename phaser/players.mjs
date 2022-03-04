@@ -22,11 +22,11 @@ function addOtherPlayers(self, playerInfo){
   self.otherPlayers[playerInfo.playerId] = otherPlayer
 }
 
-function resetPlayer(player) {
+function resetPlayer(player, self) {
   setTimeout(() => {
     player.enableBody(true, player.body.x, player.body.y, true, true)
     player.setTexture('ship')
-    socket.emit('enablePlayer', socket.id)
+    self.socket.emit('enablePlayer', self.socket.id)
     pauseCollider(player)
   }, 500)
 }

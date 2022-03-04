@@ -7,7 +7,7 @@ function crash(player, asteroid){
   if (player.shieldLevel === 0) {
     player.disableBody(true, true);
     socket.emit('disablePlayer', socket.id)
-    resetPlayer(player)
+    resetPlayer(player, this)
   } else {
     player.shieldLevel -= 1;
     let texture = player.shieldLevel === 0 ? 'ship' : 'ship_shield2'

@@ -1,7 +1,7 @@
 import {addPlayer, addOtherPlayers} from './players.mjs'
 import endGame from './endGame.mjs'
 import Laser from './laser.mjs'
-import {clearWaitScreen, getTimerDisplay} from './displays.mjs'
+import {clearWaitScreen, getTimerDisplay, updateScoreText} from './displays.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
@@ -65,9 +65,9 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('updateScore', function({socketId, score: newScore}){
     if (socketId === self.ship.playerId) {
-      score = newScore
+      self.score = newScore
     } else {
-      scoreOther = newScore
+      self.scoreOther = newScore
     }
     updateScoreText(self)
   })

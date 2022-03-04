@@ -43,10 +43,10 @@ export default function update(time) {
         this.lastFired = time;
       }
 
-      if (this.ship.x < 0) this.ship.x = canvasWidth
-      if (this.ship.x > canvasWidth) this.ship.x = 0
-      if (this.ship.y < 0) this.ship.y = canvasHeight
-      if (this.ship.y > canvasHeight) this.ship.y = 0
+      if (this.ship.x < 0) this.ship.x = this.canvasWidth
+      if (this.ship.x > this.canvasWidth) this.ship.x = 0
+      if (this.ship.y < 0) this.ship.y = this.canvasHeight
+      if (this.ship.y > this.canvasHeight) this.ship.y = 0
 
       let x = this.ship.x
       let y = this.ship.y
