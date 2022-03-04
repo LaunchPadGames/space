@@ -13,11 +13,11 @@ export default class LaserGroup extends Phaser.Physics.Arcade.Group
     })
   }
 
-  fireLaser(x, y, r) {
+  fireLaser(x, y, r, self) {
     const laser = this.getFirstDead(true, x, y, 'laserGreen');
     let ship = this.scene.ship
     if (laser) {
-      laser.fire(x, y, r);
+      laser.fire(x, y, r, self);
       if (ship.spray) {
         for(let i = 0; i <= 3; i++) {
           const laser = this.getFirstDead(true, x, y, 'laserGreen');

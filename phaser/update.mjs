@@ -39,7 +39,7 @@ export default function update(time) {
       }
 
       if (this.cursors.space.isDown && time > this.lastFired + 200 && this.ship.body.enable) {
-        this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation);
+        this.laserGroup.fireLaser(this.ship.x, this.ship.y, this.ship.rotation, this);
         this.lastFired = time;
       }
 
