@@ -27,7 +27,7 @@ function resetPlayer(player, self) {
     player.enableBody(true, player.body.x, player.body.y, true, true)
     player.setTexture('ship')
     self.socket.emit('enablePlayer', self.socket.id)
-    pauseCollider(player)
+    pauseCollider(player, self)
   }, 500)
 }
 

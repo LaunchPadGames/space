@@ -16,13 +16,13 @@ function crash(player, asteroid){
   }
 }
 
-function pauseCollider(player) {
+function pauseCollider(player, self) {
   setTimeout(() => {
-    overlap = physics.add.overlap(player, asteroids, crash, null, this)
-    overlap.name = socket.id
+    let overlap = self.physics.add.overlap(player, self.asteroids, crash, null, self)
+    overlap.name = self.socket.id
   }, 2000)
-  const collider = physics.world.colliders.getActive().find(function(collider){
-    return collider.name === socket.id
+  const collider = self.physics.world.colliders.getActive().find(function(collider){
+    return collider.name === self.socket.id
   })
   collider.destroy()
 }
@@ -31,7 +31,7 @@ function pauseCollider(player) {
 function destroyAsteroid(laser, asteroid, self) {
   asteroid.disableBody(true, true);
   if (laser.texture.key === 'laserGreen') {
-    self.socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
+    this.socket.emit('destroyAsteroid', {asteroidIndex: asteroid.index, laser: true, x: asteroid.x, y: asteroid.y})
   }
   laser.destroy()
 }
