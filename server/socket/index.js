@@ -155,7 +155,7 @@ module.exports = io => {
             // sprayQueue(io, room, socket, powerupId)
             // console.log('Added to Queue')
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
-            setTimeout(async function() {
+            let timeoutObject = setTimeout(async function() {
               // Bug has been found
               // related to how you wanted to try and stack powerups on each other
               // You originally were thinking that the setTimeout would only send the

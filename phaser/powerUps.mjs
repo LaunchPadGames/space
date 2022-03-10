@@ -1,6 +1,5 @@
 function rateOfFirePowerup(ship, powerup) {
   if(powerup){
-    console.log('rateOfFirePowerup emitter')
     this.socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
     powerup.destroy()
   }
@@ -8,7 +7,6 @@ function rateOfFirePowerup(ship, powerup) {
 
 function sprayPowerup(ship, powerup) {
   if(powerup){
-    console.log('this in spray powerup: ', this)
     this.socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
     powerup.destroy()
   }
@@ -16,7 +14,6 @@ function sprayPowerup(ship, powerup) {
 
 function shieldPowerup(ship, powerup) {
   if(powerup){
-    console.log('shieldPowerup emitter')
     this.socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
     powerup.destroy()
   }
@@ -34,7 +31,6 @@ function updateShieldPowerUp(player){
 
 function speedPowerup(ship, powerup) {
   if(powerup){
-    console.log('speed emitter')
     this.socket.emit('destroyPowerup', powerup.id, 'star_powerup')
     powerup.destroy()
   }

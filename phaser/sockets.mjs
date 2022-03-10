@@ -86,26 +86,20 @@ export default function startSocketActions(self, allowedPlayersCount) {
     updateShieldPowerUp(otherPlayer)
   })
   self.socket.on('updatePowerups', function(data){
-    console.log('update powerups data: ', data['type'])
     let powerup = self.physics.add.sprite(data['x'], data['y'], data['type'], 0);
     powerup.id = data['id']
     if(data['type'] === 'shield_powerup'){
-      console.log('Shield')
       self.physics.add.overlap(self.ship, powerup, shieldPowerup, null, self);
     } else if(data['type'] === 'silver_powerup'){
-      console.log('Rate of Fire')
       self.physics.add.overlap(self.ship, powerup, rateOfFirePowerup, null, self);
     } else if(data['type'] === 'gold_powerup'){
-      console.log('Spray')
       self.physics.add.overlap(self.ship, powerup, sprayPowerup, null, self);
     } else {
-      console.log('Speed')
       self.physics.add.overlap(self.ship, powerup, speedPowerup, null, self);
     }
     self.powerupHash[data['id']] = powerup
   })
   self.socket.on('shieldPowerUp', function(data){
-    console.log('shieldPowerUp listener')
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.shieldLevel = 2;
@@ -118,7 +112,6 @@ export default function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('silverPowerup', function(data){
-    console.log('rateOfFire listener')
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.rateOfFire = true
@@ -137,7 +130,6 @@ export default function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('goldPowerup', function(data){
-    console.log('Spray listener')
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true
@@ -156,7 +148,6 @@ export default function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('starPowerup', function(data){
-    console.log('speed listener')
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.speed += 600
