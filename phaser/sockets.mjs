@@ -3,6 +3,7 @@ import endGame from './endGame.mjs'
 import Laser from './laser.mjs'
 import {clearWaitScreen, getTimerDisplay, updateScoreText, displayWaitScreen, clearStartScreen} from './displays.mjs'
 import {rateOfFirePowerup, sprayPowerup, shieldPowerup, updateShieldPowerUp, speedPowerup} from './powerUps.mjs'
+import {destroyAsteroid} from './asteroid.mjs'
 
 export default function startSocketActions(self, allowedPlayersCount) {
   self.socket = io.connect('', { query: `allowedPlayersCount=${allowedPlayersCount}` });
@@ -29,7 +30,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
     self.otherPlayers[playerId].destroy()
   })
   self.socket.on('playerMoved', function(playerInfo){
-    otherPlayer = self.otherPlayers[playerInfo.playerId]
+    let otherPlayer = self.otherPlayers[playerInfo.playerId]
     otherPlayer.setRotation(playerInfo.rotation)
     otherPlayer.setPosition(playerInfo.x, playerInfo.y)
   })
@@ -61,7 +62,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
     self.otherPlayers[socketId].disableBody(true, true);
   })
   self.socket.on('enableOtherPlayer', function(socketId){
-    otherPlayer = self.otherPlayers[socketId]
+    let otherPlayer = self.otherPlayers[socketId]
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
   self.socket.on('updateScore', function({socketId, score: newScore}){
@@ -81,7 +82,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('shieldUpdateOtherPlayers', function(data){
     let socketId = data['socketId']
-    otherPlayer = self.otherPlayers[socketId]
+    let otherPlayer = self.otherPlayers[socketId]
     otherPlayer.shieldLevel = data['shieldLevel']
     updateShieldPowerUp(otherPlayer)
   })

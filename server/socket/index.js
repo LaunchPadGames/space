@@ -102,12 +102,12 @@ module.exports = io => {
 
         if(laser){
           let powerupNum = Math.floor(Math.random() * 100)
-           if(powerupNum < 90){
+           if(powerupNum > 50 && powerupNum < 76){
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)
             io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
-          } if (powerupNum > 90) {
+          } if (powerupNum > 76) {
             let powerupId = tagGenerator()
             redisGame['powerups'][powerupId] = true
             redisSetter(room, redisGame)

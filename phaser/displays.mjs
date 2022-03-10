@@ -32,7 +32,7 @@ function clearWaitScreen(self) {
     self.waitingText.destroy()
     self.roomTagInstructionsText.destroy()
     self.roomTagText.parentNode.removeChild(roomTagText)
-    // roomTagText.destroy()
+    self.roomTagText.destroy()
   }
 }
 
