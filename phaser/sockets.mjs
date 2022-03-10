@@ -86,22 +86,22 @@ export default function startSocketActions(self, allowedPlayersCount) {
     updateShieldPowerUp(otherPlayer)
   })
   self.socket.on('updatePowerups', function(data){
-    let powerup = physics.add.sprite(data['x'], data['y'], data['type'], 0);
+    let powerup = self.physics.add.sprite(data['x'], data['y'], data['type'], 0);
     powerup.id = data['id']
     if(data['type'] === 'shield_powerup'){
-      physics.add.overlap(self.ship, powerup, shieldPowerup);
+      self.physics.add.overlap(self, powerup, shieldPowerup);
     } else if(data['type'] === 'silver_powerup'){
-      physics.add.overlap(self.ship, powerup, rateOfFirePowerup);
+      self.physics.add.overlap(self, powerup, rateOfFirePowerup);
     } else if(data['type'] === 'gold_powerup'){
-      physics.add.overlap(self.ship, powerup, sprayPowerup);
+      self.physics.add.overlap(self, powerup, sprayPowerup);
     } else {
-      physics.add.overlap(self.ship, powerup, speedPowerup);
+      self.physics.add.overlap(self, powerup, speedPowerup);
     }
-    this.powerupHash[data['id']] = powerup
+    self.powerupHash[data['id']] = powerup
   })
   self.socket.on('shieldPowerUp', function(data){
     console.log('shieldPowerUp listener')
-    let powerup = this.powerupHash[data['powerupId']]
+    let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.shieldLevel = 2;
       self.ship.setTexture('ship_shield1')
@@ -114,7 +114,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('silverPowerup', function(data){
     console.log('rateOfFire listener')
-    let powerup = this.powerupHash[data['powerupId']]
+    let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.rateOfFire = true
     } else {
@@ -133,7 +133,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('goldPowerup', function(data){
     console.log('Spray listener')
-    let powerup = this.powerupHash[data['powerupId']]
+    let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true
     } else {
@@ -152,7 +152,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('starPowerup', function(data){
     console.log('speed listener')
-    let powerup = this.powerupHash[data['powerupId']]
+    let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.speed += 600
     } else {
@@ -163,7 +163,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
 
   self.socket.on('starPowerupOff', function(data){
-    let powerup = this.powerupHash[data['powerupId']]
+    let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.speed -= 600
     } else {

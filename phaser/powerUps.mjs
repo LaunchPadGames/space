@@ -1,23 +1,23 @@
-function rateOfFirePowerup(ship, powerup) {
+function rateOfFirePowerup(self, powerup) {
   if(powerup){
     console.log('rateOfFirePowerup emitter')
-    socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
+    self.socket.emit('destroyPowerup', powerup.id, 'silver_powerup')
     powerup.destroy()
   }
 }
 
-function sprayPowerup(ship, powerup) {
+function sprayPowerup(self, powerup) {
   if(powerup){
     console.log('sprayPowerup emitter')
-    socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
+    self.socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
     powerup.destroy()
   }
 }
 
-function shieldPowerup(ship, powerup) {
+function shieldPowerup(self, powerup) {
   if(powerup){
     console.log('shieldPowerup emitter')
-    socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
+    self.socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
     powerup.destroy()
   }
 }
@@ -32,10 +32,10 @@ function updateShieldPowerUp(player){
   }
 }
 
-function speedPowerup(ship, powerup) {
+function speedPowerup(self, powerup) {
   if(powerup){
     console.log('speed emitter')
-    socket.emit('destroyPowerup', powerup.id, 'star_powerup')
+    self.socket.emit('destroyPowerup', powerup.id, 'star_powerup')
     powerup.destroy()
   }
 }
