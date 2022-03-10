@@ -86,16 +86,21 @@ export default function startSocketActions(self, allowedPlayersCount) {
     updateShieldPowerUp(otherPlayer)
   })
   self.socket.on('updatePowerups', function(data){
+    console.log('update powerups data: ', data['type'])
     let powerup = self.physics.add.sprite(data['x'], data['y'], data['type'], 0);
     powerup.id = data['id']
     if(data['type'] === 'shield_powerup'){
-      self.physics.add.overlap(self, powerup, shieldPowerup);
+      console.log('Shield')
+      self.physics.add.overlap(self.ship, powerup, shieldPowerup, null, self);
     } else if(data['type'] === 'silver_powerup'){
-      self.physics.add.overlap(self, powerup, rateOfFirePowerup);
+      console.log('Rate of Fire')
+      self.physics.add.overlap(self.ship, powerup, rateOfFirePowerup, null, self);
     } else if(data['type'] === 'gold_powerup'){
-      self.physics.add.overlap(self, powerup, sprayPowerup);
+      console.log('Spray')
+      self.physics.add.overlap(self.ship, powerup, sprayPowerup, null, self);
     } else {
-      self.physics.add.overlap(self, powerup, speedPowerup);
+      console.log('Speed')
+      self.physics.add.overlap(self.ship, powerup, speedPowerup, null, self);
     }
     self.powerupHash[data['id']] = powerup
   })
