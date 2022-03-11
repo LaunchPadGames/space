@@ -19,11 +19,9 @@ export default function update(time) {
   else if (this.hasGameStarted) {
     if (this.ship) {
       if (this.cursors.up.isDown) {
-        console.log('UP!!!!!!!!!!!!!')
         this.physics.velocityFromRotation(this.ship.rotation, 100, this.ship.body.acceleration);
       }
       else if (this.cursors.down.isDown) {
-        console.log('DOWN!!!!!!!!!!!!!')
         this.physics.velocityFromRotation(this.ship.rotation, -100, this.ship.body.acceleration);
       }
       else {
@@ -31,11 +29,9 @@ export default function update(time) {
       }
 
       if (this.cursors.left.isDown) {
-        console.log('LEFT!!!!!!!!!!!!!')
         this.ship.setAngularVelocity(-300);
       }
       else if (this.cursors.right.isDown) {
-        console.log('RIGHT!!!!!!!!!!!!!')
         this.ship.setAngularVelocity(300);
       }
       else {

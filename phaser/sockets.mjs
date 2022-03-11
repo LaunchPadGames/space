@@ -131,6 +131,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('goldPowerup', function(data){
+    console.log('Current Player: ', self.ship.playerId === data['playerId'])
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true

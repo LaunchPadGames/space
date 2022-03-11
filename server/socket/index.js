@@ -51,12 +51,11 @@ module.exports = io => {
         const asteroidData = createAsteroids()
         redisGame = await redisGetter(room)
         redisGame['asteroids'] = asteroidData['asteroidHash']
+        let time = redisGame['time']
         let intervalId = setInterval(async function(){
-          let redisGame = await redisGetter(room)
-          if(redisGame['time'] === 0) clearInterval(redisGame['intervalId'])
-          redisGame['time'] = redisGame['time'] - 1
-          redisSetter(room, redisGame)
-          io.sockets.in(room).emit('updateTimer', redisGame['time']);
+          if(time === 0) clearInterval(redisGame['intervalId'])
+          time = time - 1
+          io.sockets.in(room).emit('updateTimer', time);
         }, 1000)
         redisGame['intervalId'] = intervalId[Symbol.toPrimitive]()
         redisSetter(room, redisGame)
