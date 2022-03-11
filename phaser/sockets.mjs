@@ -50,7 +50,7 @@ export default function startSocketActions(self, allowedPlayersCount) {
     let laser_instance = new Laser(self, laser.x, laser.y, 'laserBlue');
     self.add.existing(laser_instance);
     self.physics.add.existing(laser_instance);
-    laser_instance.fire(laser.x, laser.y, laser.rotation, false);
+    laser_instance.fire(laser.x, laser.y, laser.rotation, self, false);
     self.physics.add.overlap(laser_instance, self.asteroids, destroyAsteroid);
   });
   self.socket.on('broadcastDestoryAsteroid', function(asteroidIndex){

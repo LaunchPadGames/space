@@ -31,7 +31,7 @@ function clearWaitScreen(self) {
   if (self.waitingText) {
     self.waitingText.destroy()
     self.roomTagInstructionsText.destroy()
-    self.roomTagText.parentNode.removeChild(roomTagText)
+    self.roomTagText.parentNode.removeChild(self.roomTagText)
     self.roomTagText.destroy()
   }
 }
