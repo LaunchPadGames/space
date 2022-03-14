@@ -66,6 +66,8 @@ export default function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
   self.socket.on('updateScore', function({socketId, score: newScore}){
+    console.log('newScore: ', newScore)
+    console.log('socketId: ', socketId)
     if (socketId === self.ship.playerId) {
       self.score = newScore
     } else {

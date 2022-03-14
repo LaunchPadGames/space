@@ -35,7 +35,7 @@ function clearWaitScreen(self) {
   }
 }
 
-function getOutcome() {
+function getOutcome(self) {
   if (self.score > self.scoreOther) return 'You Win!'
   if (self.score === self.scoreOther) return 'You Tied!'
   return 'You Lose!'
