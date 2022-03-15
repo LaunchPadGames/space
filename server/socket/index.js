@@ -8,6 +8,7 @@ const {
   redisGetter,
 } = require('../util');
 const { Game, Player } = require('../../models')
+const {PowerupQueue} = require('../powerup_queue.js')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
@@ -19,7 +20,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 30, 'intervalId': null, 'powerups': {}})
+      redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300, 'intervalId': null, 'powerups': {}})
     } 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
@@ -163,17 +164,25 @@ module.exports = io => {
               console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
               let redisGame = await redisGetter(room)
               console.log('powerups: ', redisGame['players'][socket.id]['powerups'])
-              let timeoutId = redisGame['players'][socket.id]['powerups']['spray'] 
-              console.log('timeoutId: ', timeoutId)
-              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
-              if(timeoutId === this[Symbol.toPrimitive]()){
-                io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
+              let spray_queue = redisGame['players'][socket.id]['powerups']['spray']
+              if(spray_queue){
+                let timeoutId = spray_queue.dequeue()
+                console.log('timeoutId: ', timeoutId)
+                console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
+                if(spray_queue.size > 0){
+                  io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
+                }
               }
             }, 5000);
             if(!redisGame['players'][socket.id]['powerups']){
               redisGame['players'][socket.id]['powerups'] = {}
             }
-            redisGame['players'][socket.id]['powerups']['spray'] = timeoutObject[Symbol.toPrimitive]()
+            if(!redisGame['players'][socket.id]['powerups']['spray']){
+              redisGame['players'][socket.id]['powerups']['spray'] = new PowerupQueue()
+            } else {
+              console.log('queue: ', redisGame['players'][socket.id]['powerups']['spray'])
+              redisGame['players'][socket.id]['powerups']['spray'].enqueue(timeoutObject[Symbol.toPrimitive]())
+            }
             redisSetter(room, redisGame)
           } 
           if(type === 'star_powerup'){
