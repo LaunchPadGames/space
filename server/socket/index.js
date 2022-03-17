@@ -21,6 +21,7 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
+      console.log('Setting game cache')
       let game_cache = new GameCache()
       redisSetter(roomTag, game_cache)
     } 
@@ -32,7 +33,7 @@ module.exports = io => {
       where: { gameId: game.dataValues.id }
     })
 
-    let game_cache = await redisGetter(roomTag)
+    let game_cache =  await redisGetter(roomTag)
     console.log('game_cache: ', game_cache)
     const playerLimit = game.dataValues.playerLimit
     if (currentPlayersCount > playerLimit) {
@@ -42,7 +43,9 @@ module.exports = io => {
       const room = currentRoom(io, socket)
       // let redisGame = await redisGetter(room)
       // redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
+      console.log('socket id: ', socket.id)
       game_cache['players'][socket.id] = createPlayer(socket, currentPlayersCount)
+      console.log('players: ', game_cache['players'])
       // console.log('player: ', redisGame['players'])
       // await redisSetter(room, redisGame)
       
@@ -52,6 +55,7 @@ module.exports = io => {
       // update all other players of the new player
       socket.to(room).broadcast.emit('newPlayer', game_cache['players'][socket.id]);
       if (currentPlayersCount !== playerLimit) {
+        redisSetter(roomTag, game_cache)
         let base_url = process.env.BASE_URL || 'http://localhost:3000'
         
         socket.emit('waitingForPlayers', { roomTag: roomTag, time: game_cache['time'], baseUrl: base_url });
@@ -66,7 +70,6 @@ module.exports = io => {
           io.sockets.in(room).emit('updateTimer', time);
         }, 1000)
         game_cache['intervalId'] = intervalId[Symbol.toPrimitive]()
-        // redisSetter(room, redisGame)
         io.sockets.in(room).emit('createAsteroids', asteroidData['asteroidArray'])
       }
       socket.on('disconnect', async function () {
@@ -80,7 +83,6 @@ module.exports = io => {
         io.sockets.in(room).emit('disconnect', socket.id);
       });
       socket.on('playerMovement', async function(movementData){
-        console.log('cache: ', game_cache)
         // redisGame = await redisGetter(room)
         game_cache['players'][socket.id].x = movementData.x
         game_cache['players'][socket.id].y = movementData.y
@@ -91,7 +93,6 @@ module.exports = io => {
 
       socket.on('laserShot', async function(data) {
         // redisGame = await redisGetter(room)
-        console.log('cache: ', game_cache)
         if (game_cache['players'][socket.id] == null) return;
         let laser = data;
         data.owner_id = socket.id;
@@ -101,7 +102,6 @@ module.exports = io => {
         let laser = data['laser']
         let asteroidIndex = data['asteroidIndex']
         // redisGame = await redisGetter(room)
-        console.log('cache: ', game_cache)
         if(laser && game_cache['asteroids'][asteroidIndex]){
           game_cache['players'][socket.id]['score'] += 10
         }
@@ -137,12 +137,10 @@ module.exports = io => {
       })
       socket.on('destroyPowerup', async function(powerupId, type){
         // redisGame = await redisGetter(room)
-        console.log('Powerup Type: ', type)
         if(game_cache['powerups'][powerupId]){
           game_cache['powerups'][powerupId] = false
           // redisSetter(room, redisGame)
           if(type === 'shield_powerup'){
-            console.log('Shield Powerup')
             io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
           } 
           if(type === 'silver_powerup'){
@@ -166,9 +164,7 @@ module.exports = io => {
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
               if(spray_queue.size === 1){
                 let sprayIntervalId = setInterval(async function(){
-                  console.log('spray_queue before dequeue: ', spray_queue)
                   spray_queue.dequeue()
-                  console.log('spray_queue after dequeue: ', spray_queue)
                   if(spray_queue.size === 0){
                     io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
                     clearInterval(sprayIntervalId)
@@ -188,7 +184,6 @@ module.exports = io => {
             // if(!redisGame['players'][socket.id]['powerups']){
             //   redisGame['players'][socket.id]['powerups'] = {}
             // } 
-            console.log('type before speed bug: ', type)
             game_cache['players'][socket.id]['powerups']['speed'] = timeoutObject[Symbol.toPrimitive]()
             // redisSetter(room, redisGame)
           }
