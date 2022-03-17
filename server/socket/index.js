@@ -159,14 +159,17 @@ module.exports = io => {
             let spray_queue = game_cache['players'][socket.id]['powerups']['spray_queue']
             spray_queue.enqueue(powerupId)
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
-            let timeoutObject = setTimeout(async function() {
-              console.log('spray_queue before dequeue: ', spray_queue)
-              spray_queue.dequeue()
-              console.log('spray_queue after dequeue: ', spray_queue)
-              if(spray_queue.size === 0){
-                io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
-              }
-            }, 5000);
+              if(spray_queue.size === 1){
+                let sprayIntervalId = setInterval(async function(){
+                  console.log('spray_queue before dequeue: ', spray_queue)
+                  spray_queue.dequeue()
+                  console.log('spray_queue after dequeue: ', spray_queue)
+                  if(spray_queue.size === 0){
+                    io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
+                    clearInterval(sprayIntervalId)
+                  }
+                }, 5000)
+            }
           } 
           if(type === 'star_powerup'){
             io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
