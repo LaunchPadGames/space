@@ -1,3 +1,5 @@
+const { PowerupQueue } = require("../powerup_queue")
+
 module.exports = function(socket, currentPlayersCount) {
   return {
     rotation: 0,
@@ -6,5 +8,8 @@ module.exports = function(socket, currentPlayersCount) {
     playerId: socket.id,
     primary: currentPlayersCount === 1,
     score: 0,
+    powerups: {
+      spray_queue: new PowerupQueue()
+    }
   }
 }

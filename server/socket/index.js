@@ -9,6 +9,7 @@ const {
 } = require('../util');
 const { Game, Player } = require('../../models')
 const {PowerupQueue} = require('../powerup_queue.js')
+const {GameCache} = require('../game_cache.js')
 
 module.exports = io => {
   io.on('connection', async function (socket) {
@@ -22,12 +23,15 @@ module.exports = io => {
     if(!(await redisGetter(roomTag)) ){
       redisSetter(roomTag, {'players': {}, 'asteroids': {}, 'time': 300, 'intervalId': null, 'powerups': {}})
     } 
+
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
     socket.join(roomTag)
 
     let currentPlayersCount = await Player.count({
       where: { gameId: game.dataValues.id }
     })
+
+    let game_cache = currentPlayersCount === 1 ? new GameCache() : game_cache
     const playerLimit = game.dataValues.playerLimit
     if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
@@ -36,6 +40,7 @@ module.exports = io => {
       const room = currentRoom(io, socket)
       let redisGame = await redisGetter(room)
       redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
+      game_cache['players'][socket.id] = createPlayer(socket, currentPlayersCount)
       console.log('player: ', redisGame['players'])
       await redisSetter(room, redisGame)
       
@@ -151,38 +156,17 @@ module.exports = io => {
             redisSetter(room, redisGame)
           } 
           if(type === 'gold_powerup'){
-            // console.log('sprayQueue: ', sprayQueue)
-            // sprayQueue(io, room, socket, powerupId)
-            // console.log('Added to Queue')
+            let spray_queue = game_cache['players'][socket.id]['powerups']['spray_queue']
+            spray_queue.enqueue(powerupId)
             io.sockets.in(room).emit('goldPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
-              // Bug has been found
-              // related to how you wanted to try and stack powerups on each other
-              // You originally were thinking that the setTimeout would only send the
-              // websocket message if the current timeoutId matched the one in Redis
-              // Problem is that there sometimes the most recent id doesn't alway get set properly.
-              console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
-              let redisGame = await redisGetter(room)
-              console.log('powerups: ', redisGame['players'][socket.id]['powerups'])
-              let spray_queue = redisGame['players'][socket.id]['powerups']['spray']
-              if(spray_queue){
-                let timeoutId = spray_queue.dequeue()
-                console.log('timeoutId: ', timeoutId)
-                console.log('this[Symbol.toPrimitive](): ', this[Symbol.toPrimitive]())
-                if(spray_queue.size > 0){
-                  io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
-                }
+              console.log('spray_queue before dequeue: ', spray_queue)
+              spray_queue.dequeue()
+              console.log('spray_queue after dequeue: ', spray_queue)
+              if(spray_queue.size === 0){
+                io.sockets.in(room).emit('goldPowerupOff', {playerId: socket.id})
               }
             }, 5000);
-            if(!redisGame['players'][socket.id]['powerups']){
-              redisGame['players'][socket.id]['powerups'] = {}
-            }
-            if(!redisGame['players'][socket.id]['powerups']['spray']){
-              redisGame['players'][socket.id]['powerups']['spray'] = new PowerupQueue()
-            }
-            redisGame['players'][socket.id]['powerups']['spray'].enqueue(timeoutObject[Symbol.toPrimitive]())
-            console.log('queue: ', redisGame['players'][socket.id]['powerups']['spray'])
-            redisSetter(room, redisGame)
           } 
           if(type === 'star_powerup'){
             io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
