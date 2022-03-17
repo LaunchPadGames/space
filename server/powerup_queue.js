@@ -1,5 +1,5 @@
 class PowerupQueue {
-  contructor(){
+  constructor(){
     this.queue = []
     this.size = 0
   }
@@ -10,11 +10,15 @@ class PowerupQueue {
   }
 
   dequeue() {
-    let id = first()
-    this.queue = this.queue.slice(1, array.length)
-    this.size--
-
-    return id
+    if(this.size > 0){
+      let id = this.first()
+      this.queue = this.queue.slice(1, this.queue.length)
+      this.size--
+  
+      return id
+    } else {
+      return null
+    }
   }
 
   first(){

@@ -179,10 +179,9 @@ module.exports = io => {
             }
             if(!redisGame['players'][socket.id]['powerups']['spray']){
               redisGame['players'][socket.id]['powerups']['spray'] = new PowerupQueue()
-            } else {
-              console.log('queue: ', redisGame['players'][socket.id]['powerups']['spray'])
-              redisGame['players'][socket.id]['powerups']['spray'].enqueue(timeoutObject[Symbol.toPrimitive]())
             }
+            redisGame['players'][socket.id]['powerups']['spray'].enqueue(timeoutObject[Symbol.toPrimitive]())
+            console.log('queue: ', redisGame['players'][socket.id]['powerups']['spray'])
             redisSetter(room, redisGame)
           } 
           if(type === 'star_powerup'){
