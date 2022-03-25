@@ -21,7 +21,6 @@ module.exports = io => {
     });
     let game = games[0]
     if(!(await redisGetter(roomTag)) ){
-      console.log('Setting game cache')
       let game_cache = new GameCache()
       redisSetter(roomTag, game_cache)
     } 
@@ -34,7 +33,6 @@ module.exports = io => {
     })
 
     let game_cache =  await redisGetter(roomTag)
-    console.log('game_cache: ', game_cache)
     const playerLimit = game.dataValues.playerLimit
     if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
@@ -43,9 +41,7 @@ module.exports = io => {
       const room = currentRoom(io, socket)
       // let redisGame = await redisGetter(room)
       // redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
-      console.log('socket id: ', socket.id)
       game_cache['players'][socket.id] = createPlayer(socket, currentPlayersCount)
-      console.log('players: ', game_cache['players'])
       // console.log('player: ', redisGame['players'])
       // await redisSetter(room, redisGame)
       
@@ -137,6 +133,10 @@ module.exports = io => {
       })
       socket.on('destroyPowerup', async function(powerupId, type){
         // redisGame = await redisGetter(room)
+        console.log('power up: ', powerupId)
+        console.log('type: ', type)
+        console.log("game_cache: ", game_cache)
+        console.log("game_cache['powerups'][powerupId]: ", game_cache['powerups'][powerupId])
         if(game_cache['powerups'][powerupId]){
           game_cache['powerups'][powerupId] = false
           // redisSetter(room, redisGame)

@@ -66,8 +66,6 @@ export default function startSocketActions(self, allowedPlayersCount) {
     otherPlayer.enableBody(true, otherPlayer.body.x, otherPlayer.body.y, true, true)
   })
   self.socket.on('updateScore', function({socketId, score: newScore}){
-    console.log('newScore: ', newScore)
-    console.log('socketId: ', socketId)
     if (socketId === self.ship.playerId) {
       self.score = newScore
     } else {
@@ -104,6 +102,9 @@ export default function startSocketActions(self, allowedPlayersCount) {
   })
   self.socket.on('shieldPowerUp', function(data){
     let powerup = self.powerupHash[data['powerupId']]
+    console.log('shield powerup listener: ', powerup)
+    console.log("data['playerId']: ", data['playerId'])
+    console.log("self.ship.playerId : ", self.ship.playerId )
     if(self.ship.playerId === data['playerId']){
       self.ship.shieldLevel = 2;
       self.ship.setTexture('ship_shield1')
@@ -133,7 +134,6 @@ export default function startSocketActions(self, allowedPlayersCount) {
     }
   })
   self.socket.on('goldPowerup', function(data){
-    console.log('Current Player: ', self.ship.playerId === data['playerId'])
     let powerup = self.powerupHash[data['powerupId']]
     if(self.ship.playerId === data['playerId']){
       self.ship.spray = true

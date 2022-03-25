@@ -6,14 +6,18 @@ function rateOfFirePowerup(ship, powerup) {
 }
 
 function sprayPowerup(ship, powerup) {
+  console.log('spray powerup: ', powerup)
   if(powerup){
+    console.log('spray powerup in conditional: ', powerup)
     this.socket.emit('destroyPowerup', powerup.id, 'gold_powerup')
     powerup.destroy()
   }
 }
 
 function shieldPowerup(ship, powerup) {
+  console.log('shield powerup: ', powerup)
   if(powerup){
+    console.log('shield powerup in conditional: ', powerup)
     this.socket.emit('destroyPowerup', powerup.id, 'shield_powerup')
     powerup.destroy()
   }
