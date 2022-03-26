@@ -112,10 +112,6 @@ module.exports = io => {
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
       socket.on('destroyPowerup', async function(powerupId, type){
-        console.log('power up: ', powerupId)
-        console.log('type: ', type)
-        console.log("global.game_cache: ", global.game_cache)
-        console.log("global.game_cache['powerups'][powerupId]: ", global.game_cache['powerups'][powerupId])
         if(global.game_cache['powerups'][powerupId]){
           global.game_cache['powerups'][powerupId] = false
           if(type === 'shield_powerup'){
