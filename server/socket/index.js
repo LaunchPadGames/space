@@ -22,7 +22,6 @@ module.exports = io => {
     let game = games[0]
     if(!global.global.game_cache){
       global.game_cache = new GameCache()
-      // redisSetter(roomTag, global.game_cache)
     } 
 
     await Player.create({socketId: socket.id, gameId: game.dataValues.id})
@@ -32,20 +31,13 @@ module.exports = io => {
       where: { gameId: game.dataValues.id }
     })
 
-    // let game_cache =  await redisGetter(roomTag)
     const playerLimit = game.dataValues.playerLimit
     if (currentPlayersCount > playerLimit) {
       socket.emit('inProgress');
     } else {
       console.log('a user connected');
       const room = currentRoom(io, socket)
-      // let redisGame = await redisGetter(room)
-      // redisGame['players'][socket.id] = createPlayer(socket, currentPlayersCount)
       global.game_cache['players'][socket.id] = createPlayer(socket, currentPlayersCount)
-      // console.log('player: ', redisGame['players'])
-      // await redisSetter(room, redisGame)
-      
-      // send the players object to the new player
       socket.emit('currentPlayers', global.game_cache['players']);
 
       // update all other players of the new player
@@ -70,25 +62,17 @@ module.exports = io => {
       }
       socket.on('disconnect', async function () {
         console.log('user disconnected');
-        // remove this player from our players object
-        // redisGame = await redisGetter(room)
         delete global.game_cache['players'][socket.id]
-        // redisSetter(room, redisGame)
-        // delete players[room][socket.id];
-        // emit a message to all players to remove this player
         io.sockets.in(room).emit('disconnect', socket.id);
       });
       socket.on('playerMovement', async function(movementData){
-        // redisGame = await redisGetter(room)
         global.game_cache['players'][socket.id].x = movementData.x
         global.game_cache['players'][socket.id].y = movementData.y
         global.game_cache['players'][socket.id].rotation = movementData.rotation
-        // redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('playerMoved', global.game_cache['players'][socket.id])
       })
 
       socket.on('laserShot', async function(data) {
-        // redisGame = await redisGetter(room)
         if (global.game_cache['players'][socket.id] == null) return;
         let laser = data;
         data.owner_id = socket.id;
@@ -97,12 +81,10 @@ module.exports = io => {
       socket.on('destroyAsteroid', async function(data){
         let laser = data['laser']
         let asteroidIndex = data['asteroidIndex']
-        // redisGame = await redisGetter(room)
         if(laser && global.game_cache['asteroids'][asteroidIndex]){
           global.game_cache['players'][socket.id]['score'] += 10
         }
         global.game_cache['asteroids'][asteroidIndex] = false
-        // redisSetter(room, redisGame)
         socket.to(room).broadcast.emit('broadcastDestoryAsteroid', asteroidIndex)
         io.sockets.in(room).emit('updateScore', {socketId: socket.id, score: global.game_cache['players'][socket.id]['score']})
 
@@ -111,12 +93,10 @@ module.exports = io => {
            if(powerupNum > 50 && powerupNum < 76){
             let powerupId = tagGenerator()
             global.game_cache['powerups'][powerupId] = true
-            // redisSetter(room, redisGame)
             io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'gold_powerup'})
           } if (powerupNum > 76) {
             let powerupId = tagGenerator()
             global.game_cache['powerups'][powerupId] = true
-            // redisSetter(room, redisGame)
             io.sockets.in(room).emit('updatePowerups', {id: powerupId, x: data['x'], y: data['y'], type: 'shield_powerup'})
           }
         }
@@ -132,14 +112,12 @@ module.exports = io => {
         socket.to(room).broadcast.emit('shieldUpdateOtherPlayers', data)
       })
       socket.on('destroyPowerup', async function(powerupId, type){
-        // redisGame = await redisGetter(room)
         console.log('power up: ', powerupId)
         console.log('type: ', type)
         console.log("global.game_cache: ", global.game_cache)
         console.log("global.game_cache['powerups'][powerupId]: ", global.game_cache['powerups'][powerupId])
         if(global.game_cache['powerups'][powerupId]){
           global.game_cache['powerups'][powerupId] = false
-          // redisSetter(room, redisGame)
           if(type === 'shield_powerup'){
             io.sockets.in(room).emit('shieldPowerUp', {powerupId: powerupId, texture: 'ship_shield1', level: 2, playerId: socket.id})
           } 
@@ -152,11 +130,7 @@ module.exports = io => {
                 io.sockets.in(room).emit('silverPowerupOff', {playerId: socket.id})
               }
             }, 5000);
-            // if(!redisGame['players'][socket.id]['powerups']){
-            //   redisGame['players'][socket.id]['powerups'] = {}
-            // }
             global.game_cache['players'][socket.id]['powerups']['rateOfFire'] = timeoutObject[Symbol.toPrimitive]()
-            // redisSetter(room, redisGame)
           } 
           if(type === 'gold_powerup'){
             let spray_queue = global.game_cache['players'][socket.id]['powerups']['spray_queue']
@@ -175,17 +149,12 @@ module.exports = io => {
           if(type === 'star_powerup'){
             io.sockets.in(room).emit('starPowerup', {powerupId: powerupId, playerId: socket.id})
             let timeoutObject = setTimeout(async function() {
-              // let redisGame = await redisGetter(room)
               let timeoutId = global.game_cache['players'][socket.id]['powerups']['speed'] 
               if(timeoutId === this[Symbol.toPrimitive]()){
                 io.sockets.in(room).emit('starPowerupOff', {playerId: socket.id})
               }
             }, 5000);
-            // if(!redisGame['players'][socket.id]['powerups']){
-            //   redisGame['players'][socket.id]['powerups'] = {}
-            // } 
             global.game_cache['players'][socket.id]['powerups']['speed'] = timeoutObject[Symbol.toPrimitive]()
-            // redisSetter(room, redisGame)
           }
         }
       })
