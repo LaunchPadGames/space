@@ -572,7 +572,7 @@
   dependencies:
     "object-keys" "^1.0.12"
 
-"denque@^1.1.0", "denque@^1.4.1":
+"denque@^1.1.0":
   "integrity" "sha512-CYiCSgIF1p6EUByQPlGkKnP1M9g0ZV3qMIrqMqZqdwazygIA/YP2vrbcyl1h/WppKJTdl1F85cXIle+394iDAQ=="
   "resolved" "https://registry.npmjs.org/denque/-/denque-1.5.0.tgz"
   "version" "1.5.0"
@@ -1952,7 +1952,7 @@
   dependencies:
     "picomatch" "^2.2.1"
 
-"redis-commands@^1.5.0", "redis-commands@1.7.0":
+"redis-commands@1.7.0":
   "integrity" "sha512-nJWqw3bTFy21hX/CPKHth6sfhZbdiHP6bTawSgQBlKOVRG7EZkfHbbHwQJnrE4vsQf0CMNE+3gJ4Fmm16vdVlQ=="
   "resolved" "https://registry.npmjs.org/redis-commands/-/redis-commands-1.7.0.tgz"
   "version" "1.7.0"
@@ -1968,16 +1968,6 @@
   "version" "3.0.0"
   dependencies:
     "redis-errors" "^1.0.0"
-
-"redis@^3.0.2":
-  "integrity" "sha512-PNhLCrjU6vKVuMOyFu7oSP296mwBkcE6lrAjruBYG5LgdSqtRBoVQIylrMyVZD/lkF24RSNNatzvYag6HRBHjQ=="
-  "resolved" "https://registry.npmjs.org/redis/-/redis-3.0.2.tgz"
-  "version" "3.0.2"
-  dependencies:
-    "denque" "^1.4.1"
-    "redis-commands" "^1.5.0"
-    "redis-errors" "^1.2.0"
-    "redis-parser" "^3.0.0"
 
 "registry-auth-token@^4.0.0":
   "integrity" "sha512-P+lWzPrsgfN+UEpDS3U8AQKg/UjZX6mQSJueZj3EK+vNESoqBSpBUD3gmu4sF9lOsjXWjF11dQKUqemf3veq1w=="

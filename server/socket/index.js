@@ -3,12 +3,9 @@ const {
   createAsteroids, 
   tagGenerator,
   roomTagParser,
-  currentRoom,
-  redisSetter,
-  redisGetter,
+  currentRoom
 } = require('../util');
 const { Game, Player } = require('../../models')
-const {PowerupQueue} = require('../powerup_queue.js')
 const {GameCache} = require('../game_cache.js')
 
 module.exports = io => {
@@ -43,13 +40,11 @@ module.exports = io => {
       // update all other players of the new player
       socket.to(room).broadcast.emit('newPlayer', global.game_cache['players'][socket.id]);
       if (currentPlayersCount !== playerLimit) {
-        redisSetter(roomTag, global.game_cache)
         let base_url = process.env.BASE_URL || 'http://localhost:3000'
         
         socket.emit('waitingForPlayers', { roomTag: roomTag, time: global.game_cache['time'], baseUrl: base_url });
       } else {
         const asteroidData = createAsteroids()
-        // redisGame = await redisGetter(room)
         global.game_cache['asteroids'] = asteroidData['asteroidHash']
         let time = global.game_cache['time']
         let intervalId = setInterval(async function(){
