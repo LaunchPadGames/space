@@ -9,7 +9,6 @@ const io = require('socket.io').listen(server)
 connect_agones()
 const port = process.env.PORT || 3000
 
-require('./connect_agones')
 app.use('/', express.static('phaser'));
 
 require('./socket')(io);
